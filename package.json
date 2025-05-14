@@ -36,6 +36,11 @@
   "license": "MIT",
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^13.0.1",
+    "@semantic-release/github": "^11.0.2",
+    "@semantic-release/npm": "^12.0.1",
+    "@semantic-release/release-notes-generator": "^14.0.3",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.15.17",
     "@types/react": "^19.1.4",
