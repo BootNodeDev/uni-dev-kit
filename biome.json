@@ -1,0 +1,13 @@
+{
+	"formatter": {
+		"ignore": ["dist/**/*"]
+	},
+	"linter": {
+		"rules": {
+			"recommended": true
+		}
+	},
+	"files": {
+		"include": ["src/**/*", "test/**/*"]
+	}
+}
