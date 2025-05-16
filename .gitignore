@@ -16,3 +16,17 @@ coverage
 
 # Husky
 .husky
+
+# Vitest
+.vitest
+
+# TypeScript
+.tsbuildinfo
+
+# TypeDoc
+.typedoc
+
+# macOS
+.DS_Store
+
+
