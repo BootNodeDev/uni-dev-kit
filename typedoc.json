@@ -5,5 +5,15 @@
   "excludePrivate": true,
   "excludeProtected": true,
   "excludeInternal": true,
-  "tsconfig": "tsconfig.json"
-} 
+  "tsconfig": "tsconfig.json",
+  "name": "Uniswap DevEx Library",
+  "readme": "README.md",
+  "plugin": ["typedoc-plugin-markdown"],
+  "theme": "default",
+  "categorizeByGroup": true,
+  "categoryOrder": ["Core", "Utils", "Helpers", "Types", "Constants", "Errors", "Hooks"],
+  "searchInComments": true,
+  "navigationLinks": {
+    "GitHub": "https://github.com/bootnodedev/uni-dev-kit"
+  }
+}
