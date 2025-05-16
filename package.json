@@ -1,6 +1,6 @@
 {
   "name": "uni-dev-kit",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "description": "A modern TypeScript library for integrating Uniswap into your dapp.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
