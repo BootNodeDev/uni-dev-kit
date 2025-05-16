@@ -1,5 +1,5 @@
 import type { UniDevKitV4Config, UniDevKitV4Instance } from "@/types/core";
-import { createPublicClient, http, type Address, type Chain } from "viem";
+import { http, type Address, type Chain, createPublicClient } from "viem";
 
 /**
  * Main class for interacting with Uniswap V4 contracts.

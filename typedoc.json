@@ -6,16 +6,18 @@
   "excludeProtected": true,
   "excludeInternal": true,
   "tsconfig": "tsconfig.json",
-  "name": "Uniswap DevEx Library",
+  "name": "UniDevKit",
   "readme": "README.md",
   "theme": "default",
   "categorizeByGroup": true,
   "categoryOrder": ["Core", "Utils", "Helpers", "Types", "Constants", "Errors", "Hooks"],
   "searchInComments": true,
   "navigationLinks": {
-    "GitHub": "https://github.com/bootnodedev/uni-dev-kit"
+    "GitHub": "https://github.com/BootNodeDev/uni-dev-kit"
   },
-  "externalPattern": "**/node_modules/**",
+  "externalPattern": ["**/node_modules/**"],
   "excludeExternals": true,
-  "exclude": ["**/node_modules/**", "**/dist/**"]
+  "exclude": ["**/node_modules/**", "**/dist/**"],
+  "cleanOutputDir": true,
+  "githubPages": true
 }
