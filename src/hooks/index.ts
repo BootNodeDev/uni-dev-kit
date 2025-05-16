@@ -1,2 +1,1 @@
-// Placeholder for future React hooks
-export {};
+export { useGetQuote } from "./useGetQuote";
