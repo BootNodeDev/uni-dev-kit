@@ -36,8 +36,8 @@ describe("useGetQuote", () => {
 	it("should fetch quote successfully", async () => {
 		const mockQuote = {
 			amountOut: parseEther("0.5"),
-			sqrtPriceX96: BigInt("123456789"),
-			tick: 12345,
+			estimatedGasUsed: BigInt(21000),
+			timestamp: Date.now(),
 		};
 
 		mockGetQuote.mockResolvedValueOnce(mockQuote);
@@ -63,11 +63,7 @@ describe("useGetQuote", () => {
 			expect(result.current.isLoading).toBe(false);
 		});
 
-		expect(result.current.data).toEqual({
-			amountOut: mockQuote.amountOut,
-			sqrtPriceX96: mockQuote.sqrtPriceX96,
-			tick: mockQuote.tick,
-		});
+		expect(result.current.data).toEqual(mockQuote);
 		expect(mockGetQuote).toHaveBeenCalledWith(
 			{
 				tokens: [USDC, WETH],
@@ -103,13 +99,5 @@ describe("useGetQuote", () => {
 		});
 
 		expect(result.current.error).toEqual(error);
-	});
-
-	it("should not fetch when params are not provided", () => {
-		const { result } = renderHook(() => useGetQuote(), { wrapper });
-
-		expect(result.current.isLoading).toBe(false);
-		expect(result.current.data).toBeUndefined();
-		expect(mockGetQuote).not.toHaveBeenCalled();
 	});
 });

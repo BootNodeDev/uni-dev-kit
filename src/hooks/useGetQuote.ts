@@ -2,7 +2,7 @@ import type { QuoteParams, QuoteResponse } from "@/types/utils/getQuote";
 import { getQuote } from "@/utils/getQuote";
 import { type UseQueryOptions, useQuery } from "@tanstack/react-query";
 
-type UseGetQuoteOptions = {
+export type UseGetQuoteOptions = {
 	/** Initial quote parameters */
 	params?: QuoteParams;
 	/** Chain ID to use */
@@ -55,12 +55,10 @@ export function useGetQuote({
 	chainId,
 	queryOptions = {},
 }: UseGetQuoteOptions = {}) {
+	if (!params) throw new Error("No params provided");
 	return useQuery<QuoteResponse, Error, QuoteResponse, unknown[]>({
 		queryKey: ["quote", serializeParams(params), chainId],
-		queryFn: () => {
-			if (!params) throw new Error("No params provided");
-			return getQuote(params, chainId);
-		},
+		queryFn: () => getQuote(params, chainId),
 		...queryOptions,
 	});
 }
