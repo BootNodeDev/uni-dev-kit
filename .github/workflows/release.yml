@@ -26,7 +26,15 @@ jobs:
         
       - name: Build Package
         run: pnpm run build
-        
+
+      - name: Create v0.0.0 tag if missing
+        run: |
+          git fetch --tags
+          if ! git tag | grep -q v0.0.0; then
+            git tag v0.0.0
+            git push origin v0.0.0
+          fi
+
       - name: Run Semantic Release
         run: npx semantic-release
         env:
