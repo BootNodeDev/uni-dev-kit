@@ -1,1 +1,1 @@
-export * from "./getQuote";
+export * from "@/types/utils/getQuote";

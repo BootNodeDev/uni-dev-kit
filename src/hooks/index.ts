@@ -1,1 +1,1 @@
-export { useGetQuote } from "./useGetQuote";
+export { useGetQuote } from "@/hooks/useGetQuote";

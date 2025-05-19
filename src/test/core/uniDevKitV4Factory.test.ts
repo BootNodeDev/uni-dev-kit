@@ -5,7 +5,7 @@ import {
 	removeInstance,
 	resetInstances,
 } from "@/core/uniDevKitV4Factory";
-import type { UniDevKitV4Config } from "@/types/core";
+import type { UniDevKitV4Config } from "@/types";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 describe("UniDevKitV4Factory", () => {

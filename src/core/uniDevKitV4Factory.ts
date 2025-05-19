@@ -1,5 +1,5 @@
 import { UniDevKitV4 } from "@/core/uniDevKitV4";
-import type { UniDevKitV4Config } from "@/types/core";
+import type { UniDevKitV4Config } from "@/types";
 
 const instances = new Map<number, UniDevKitV4>();
 
