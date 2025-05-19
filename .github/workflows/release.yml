@@ -18,7 +18,7 @@ jobs:
         run: npm install -g pnpm
       - run: pnpm install
       - run: pnpm run build
-      - run: npx semantic-release
+      - run: npx semantic-release --no-ci
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }} 
