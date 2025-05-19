@@ -1,5 +1,5 @@
 {
-  "name": "uni-dev-kit",
+  "name": "uniswap-dev-kit",
   "version": "0.0.1",
   "description": "A modern TypeScript library for integrating Uniswap into your dapp.",
   "main": "dist/index.js",
@@ -10,7 +10,9 @@
       "require": "./dist/index.js"
     }
   },
-  "files": ["dist/**/*"],
+  "files": [
+    "dist/**/*"
+  ],
   "scripts": {
     "dev": "tsc --watch",
     "build": "npm run clean && tsc && tsc-alias",
@@ -43,6 +45,10 @@
   ],
   "author": "BootNodeDev",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "peerDependencies": {
     "@tanstack/react-query": "^5.0.0",
     "react": "^18.0.0",

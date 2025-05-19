@@ -9,16 +9,27 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20
           registry-url: 'https://registry.npmjs.org/'
+
       - name: Install pnpm
         run: npm install -g pnpm
-      - run: pnpm install
-      - run: pnpm run build
-      - run: npx semantic-release --no-ci
+        
+      - name: Install Dependencies
+        run: pnpm install
+        
+      - name: Build Package
+        run: pnpm run build
+        
+      - name: Run Semantic Release
+        run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }} 
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          CI: true

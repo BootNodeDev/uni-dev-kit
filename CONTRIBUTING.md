@@ -1,4 +1,4 @@
-# Contributing to uni-dev-kit
+# Contributing to uniswap-dev-kit
 
 Thanks for your interest in contributing! Here's how to get started:
 
