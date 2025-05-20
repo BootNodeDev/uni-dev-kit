@@ -1,18 +1,7 @@
+import type { UseGetQuoteOptions } from "@/types/hooks/useGetQuote";
 import type { QuoteParams, QuoteResponse } from "@/types/utils/getQuote";
 import { getQuote } from "@/utils/getQuote";
-import { type UseQueryOptions, useQuery } from "@tanstack/react-query";
-
-export type UseGetQuoteOptions = {
-	/** Initial quote parameters */
-	params?: QuoteParams;
-	/** Chain ID to use */
-	chainId?: number;
-	/** React Query options */
-	queryOptions?: Omit<
-		UseQueryOptions<QuoteResponse, Error, QuoteResponse, unknown[]>,
-		"queryKey"
-	>;
-};
+import { useQuery } from "@tanstack/react-query";
 
 /**
  * React hook for fetching quotes from Uniswap V4 using React Query.
@@ -41,7 +30,6 @@ export type UseGetQuoteOptions = {
  * });
  * ```
  */
-
 function serializeParams(params?: QuoteParams) {
 	if (!params) return undefined;
 	return {
