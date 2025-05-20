@@ -26,9 +26,9 @@ describe("getTokenInstances", () => {
 	});
 
 	it("should return token instances for valid addresses", async () => {
-		const addresses: Address[] = [
-			"0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984", // UNI
-			"0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", // WETH
+		const addresses: [Address, ...Address[]] = [
+			"0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984" as Address, // UNI
+			"0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" as Address, // WETH
 		];
 
 		const mockResults = [
@@ -99,20 +99,5 @@ describe("getTokenInstances", () => {
 		});
 
 		expect(result).toBeNull();
-	});
-
-	it("should handle empty addresses array", async () => {
-		mockClient.multicall.mockResolvedValueOnce([]);
-
-		const result = await getTokenInstances({
-			addresses: [],
-			chainId: 1,
-		});
-
-		expect(result).toEqual([]);
-		expect(mockClient.multicall).toHaveBeenCalledWith({
-			contracts: [],
-			allowFailure: false,
-		});
 	});
 });

@@ -1,10 +1,5 @@
-/**
- * @fileoverview Hook to check if a Uniswap V4 pool exists for a given token pair,
- * fee tier, tick spacing, and hooks configuration.
- */
-
 import { V4PositionManagerAbi } from "@/constants/abis/V4PositionMananger";
-import { V4StateViewABI } from "@/constants/abis/V4StateView";
+import { V4StateViewAbi } from "@/constants/abis/V4StateView";
 import { getInstance } from "@/core/uniDevKitV4Factory";
 import { getTickSpacingForFee } from "@/helpers/fees";
 import { sortTokens } from "@/helpers/tokens";
@@ -72,13 +67,13 @@ export async function getPool({
 			},
 			{
 				address: sdk.getContractAddress("stateView"),
-				abi: V4StateViewABI,
+				abi: V4StateViewAbi,
 				functionName: "getSlot0",
 				args: [poolId32Bytes],
 			},
 			{
 				address: sdk.getContractAddress("stateView"),
-				abi: V4StateViewABI,
+				abi: V4StateViewAbi,
 				functionName: "getLiquidity",
 				args: [poolId32Bytes],
 			},
