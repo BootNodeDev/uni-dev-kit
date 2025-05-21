@@ -1,5 +1,11 @@
+import { getChainById } from "@/constants/chains";
 import type { UniDevKitV4Config, UniDevKitV4Instance } from "@/types/core";
-import { http, type Address, type Chain, createPublicClient } from "viem";
+import {
+	http,
+	type Address,
+	type PublicClient,
+	createPublicClient,
+} from "viem";
 
 /**
  * Main class for interacting with Uniswap V4 contracts.
@@ -27,7 +33,7 @@ export class UniDevKitV4 {
 	private createInstance(config: UniDevKitV4Config): UniDevKitV4Instance {
 		const client = this.createClient(config);
 		return {
-			client,
+			client: client as PublicClient,
 			chainId: config.chainId,
 			contracts: config.contracts,
 		};
@@ -39,25 +45,13 @@ export class UniDevKitV4 {
 	 * @returns A new PublicClient instance.
 	 */
 	private createClient(config: UniDevKitV4Config) {
-		const { chainId, rpcUrl, nativeCurrency } = config;
+		const { chainId, rpcUrl } = config;
 
-		const customChain: Chain = {
-			id: chainId,
-			name: `custom-chain-${chainId}`,
-			nativeCurrency: nativeCurrency || {
-				name: "Ether",
-				symbol: "ETH",
-				decimals: 18,
-			},
-			rpcUrls: {
-				default: { http: [rpcUrl] },
-				public: { http: [rpcUrl] },
-			},
-		};
+		const chain = getChainById(chainId);
 
 		return createPublicClient({
-			chain: customChain,
-			transport: http(rpcUrl),
+			chain,
+			transport: http(rpcUrl || chain.rpcUrls.default.http[0]),
 		});
 	}
 

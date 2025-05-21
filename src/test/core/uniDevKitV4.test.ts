@@ -40,8 +40,8 @@ describe("UniDevKitV4", () => {
 	it("should update config", () => {
 		const newConfig: UniDevKitV4Config = {
 			...config,
-			chainId: 5,
-			rpcUrl: "https://goerli.infura.io/v3/your-api-key",
+			chainId: 8453,
+			rpcUrl: "https://base-rpc.com",
 		};
 		sdk.updateConfig(newConfig);
 		expect(sdk.getChainId()).toBe(newConfig.chainId);
@@ -50,11 +50,6 @@ describe("UniDevKitV4", () => {
 	it("should create client with custom native currency", () => {
 		const customConfig: UniDevKitV4Config = {
 			...config,
-			nativeCurrency: {
-				name: "Custom Token",
-				symbol: "CTK",
-				decimals: 18,
-			},
 		};
 		const customSdk = new UniDevKitV4(customConfig);
 		expect(customSdk.getClient()).toBeDefined();

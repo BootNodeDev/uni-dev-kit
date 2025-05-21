@@ -73,29 +73,29 @@ describe("UniDevKitV4Factory", () => {
 
 	it("should throw when getting default instance with multiple chains", () => {
 		createInstance(config);
-		createInstance({ ...config, chainId: 5 });
+		createInstance({ ...config, chainId: 8453 });
 		expect(() => getInstance()).toThrow(
-			"Multiple instances found. Please specify a chain ID. Available chains: 1, 5",
+			"Multiple instances found. Please specify a chain ID. Available chains: 1, 8453",
 		);
 	});
 
 	describe("Multiple chain configurations", () => {
 		it("should handle multiple chains with different RPCs", () => {
 			const mainnet = createInstance(config);
-			const goerli = createInstance({
+			const base = createInstance({
 				...config,
-				chainId: 5,
-				rpcUrl: "https://goerli.infura.io/v3/your-api-key",
+				chainId: 8453,
+				rpcUrl: "https://base-rpc.com",
 			});
-			const sepolia = createInstance({
+			const arbitrum = createInstance({
 				...config,
-				chainId: 11155111,
-				rpcUrl: "https://sepolia.infura.io/v3/your-api-key",
+				chainId: 42161,
+				rpcUrl: "https://arbitrum-rpc.com",
 			});
 
 			expect(getInstance(1)).toBe(mainnet);
-			expect(getInstance(5)).toBe(goerli);
-			expect(getInstance(11155111)).toBe(sepolia);
+			expect(getInstance(8453)).toBe(base);
+			expect(getInstance(42161)).toBe(arbitrum);
 		});
 
 		it("should handle multiple chains with different native currencies", () => {
@@ -103,12 +103,6 @@ describe("UniDevKitV4Factory", () => {
 			const polygon = createInstance({
 				...config,
 				chainId: 137,
-				rpcUrl: "https://polygon-rpc.com",
-				nativeCurrency: {
-					name: "MATIC",
-					symbol: "MATIC",
-					decimals: 18,
-				},
 			});
 
 			expect(getInstance(1)).toBe(mainnet);
@@ -117,26 +111,26 @@ describe("UniDevKitV4Factory", () => {
 
 		it("should list all configured chain IDs", () => {
 			createInstance(config); // mainnet
-			createInstance({ ...config, chainId: 5 }); // goerli
+			createInstance({ ...config, chainId: 8453 }); // base
 			createInstance({ ...config, chainId: 137 }); // polygon
 
 			const chainIds = listChainIds();
 			expect(chainIds).toHaveLength(3);
 			expect(chainIds).toContain(1);
-			expect(chainIds).toContain(5);
+			expect(chainIds).toContain(8453);
 			expect(chainIds).toContain(137);
 		});
 
 		it("should remove specific chain instance", () => {
 			createInstance(config); // mainnet
-			createInstance({ ...config, chainId: 5 }); // goerli
+			createInstance({ ...config, chainId: 8453 }); // base
 			createInstance({ ...config, chainId: 137 }); // polygon
 
-			removeInstance(5);
+			removeInstance(8453);
 			const chainIds = listChainIds();
 			expect(chainIds).toHaveLength(2);
-			expect(chainIds).not.toContain(5);
-			expect(() => getInstance(5)).toThrow();
+			expect(chainIds).not.toContain(8453);
+			expect(() => getInstance(8453)).toThrow();
 		});
 	});
 });
