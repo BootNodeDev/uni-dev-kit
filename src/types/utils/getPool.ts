@@ -1,4 +1,3 @@
-import type { Pool } from "@uniswap/v4-sdk";
 import type { Address } from "viem";
 
 /**
@@ -28,24 +27,10 @@ export const TICK_SPACING_BY_FEE: Record<FeeTier, number> = {
 export interface PoolParams {
 	/** Array of two token addresses representing the pair */
 	tokens: [Address, Address];
-	/** Chain ID where the pool exists */
-	chainId: number;
 	/** Optional fee tier of the pool (default: FeeTier.MEDIUM) */
 	fee?: FeeTier;
 	/** Optional tick spacing for the pool (default: derived from fee tier) */
 	tickSpacing?: number;
 	/** Optional hooks contract address (default: zero address) */
 	hooks?: `0x${string}`;
-}
-
-/**
- * Response structure for pool retrieval.
- */
-export interface PoolResponse {
-	/** The pool instance if found, undefined otherwise */
-	data: Pool | undefined;
-	/** Loading state of the request */
-	isLoading: boolean;
-	/** Any error encountered during the request */
-	error: Error | null;
 }

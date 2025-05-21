@@ -5,15 +5,17 @@ import { type Address, zeroAddress } from "viem";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockGetInstance = vi.fn();
-const mockGetTokenInstances = vi.fn();
+const mockGetTokens = vi.fn();
+const mockGetClient = vi.fn();
 const mockUseReadContracts = vi.fn();
 
 vi.mock("@/core/uniDevKitV4Factory", () => ({
 	getInstance: () => mockGetInstance(),
+	getClient: () => mockGetClient(),
 }));
 
-vi.mock("@/utils/getTokenInstance", () => ({
-	getTokenInstances: () => mockGetTokenInstances(),
+vi.mock("@/utils/getTokens", () => ({
+	getTokens: () => mockGetTokens(),
 }));
 
 vi.mock("wagmi", () => ({
@@ -35,27 +37,32 @@ describe("useV4Pool", () => {
 	it("should throw error if SDK instance not found", async () => {
 		mockGetInstance.mockReturnValueOnce(undefined);
 		await expect(
-			getPool({
-				tokens: mockTokens,
-				chainId: mockChainId,
-				fee: FeeTier.MEDIUM,
-			}),
+			getPool(
+				{
+					tokens: mockTokens,
+					fee: FeeTier.MEDIUM,
+				},
+				mockChainId,
+			),
 		).rejects.toThrow("SDK not found");
 	});
 
 	it("should throw error if token instances not found", async () => {
 		mockGetInstance.mockReturnValueOnce({
+			client: { multicall: vi.fn() },
 			getClient: vi.fn(),
 			getContractAddress: vi.fn(),
 		});
-		mockGetTokenInstances.mockResolvedValueOnce(null);
+		mockGetTokens.mockResolvedValueOnce(null);
 
 		await expect(
-			getPool({
-				tokens: mockTokens,
-				chainId: mockChainId,
-				fee: FeeTier.MEDIUM,
-			}),
+			getPool(
+				{
+					tokens: mockTokens,
+					fee: FeeTier.MEDIUM,
+				},
+				mockChainId,
+			),
 		).rejects.toThrow("Failed to fetch token instances");
 	});
 
@@ -73,26 +80,29 @@ describe("useV4Pool", () => {
 			"1000000000000000000",
 		];
 
+		const mockClient = {
+			multicall: vi.fn().mockResolvedValueOnce(mockPoolData),
+		};
 		mockGetInstance.mockReturnValueOnce({
-			getClient: vi.fn(),
+			getClient: () => mockClient,
 			getContractAddress: vi.fn(() => "0xMockAddress"),
 		});
 
-		mockGetTokenInstances.mockResolvedValueOnce(mockTokenInstances);
+		mockGetTokens.mockResolvedValueOnce(mockTokenInstances);
 		mockUseReadContracts.mockReturnValueOnce({
 			data: mockPoolData,
 			isLoading: false,
 		});
 
-		const result = await getPool({
-			tokens: mockTokens,
-			chainId: mockChainId,
-			fee: FeeTier.MEDIUM,
-		});
+		const result = await getPool(
+			{
+				tokens: mockTokens,
+				fee: FeeTier.MEDIUM,
+			},
+			mockChainId,
+		);
 
-		expect(result.data).toBeDefined();
-		expect(result.isLoading).toBe(false);
-		expect(result.error).toBeNull();
+		expect(result).toBeDefined();
 	});
 
 	it("should return undefined data when pool does not exist", async () => {
@@ -101,26 +111,27 @@ describe("useV4Pool", () => {
 			new Token(1, mockTokens[1], 18, "TOKEN1", "Token 1"),
 		];
 
+		const mockClient = { multicall: vi.fn() };
 		mockGetInstance.mockReturnValueOnce({
-			getClient: vi.fn(),
+			getClient: () => mockClient,
 			getContractAddress: vi.fn(() => "0xMockAddress"),
 		});
 
-		mockGetTokenInstances.mockResolvedValueOnce(mockTokenInstances);
+		mockGetTokens.mockResolvedValueOnce(mockTokenInstances);
 		mockUseReadContracts.mockReturnValueOnce({
 			data: null,
 			isLoading: false,
 		});
 
-		const result = await getPool({
-			tokens: mockTokens,
-			chainId: mockChainId,
-			fee: FeeTier.MEDIUM,
-		});
+		const result = await getPool(
+			{
+				tokens: mockTokens,
+				fee: FeeTier.MEDIUM,
+			},
+			mockChainId,
+		);
 
-		expect(result.data).toBeUndefined();
-		expect(result.isLoading).toBe(false);
-		expect(result.error).toBeDefined();
+		expect(result).toBeUndefined();
 	});
 
 	it("should handle pool creation error", async () => {
@@ -135,25 +146,28 @@ describe("useV4Pool", () => {
 			"1000000000000000000",
 		];
 
+		const mockClient = {
+			multicall: vi.fn().mockResolvedValueOnce(mockPoolData),
+		};
 		mockGetInstance.mockReturnValueOnce({
-			getClient: vi.fn(),
+			getClient: () => mockClient,
 			getContractAddress: vi.fn(() => "0xMockAddress"),
 		});
 
-		mockGetTokenInstances.mockResolvedValueOnce(mockTokenInstances);
+		mockGetTokens.mockResolvedValueOnce(mockTokenInstances);
 		mockUseReadContracts.mockReturnValueOnce({
 			data: mockPoolData,
 			isLoading: false,
 		});
 
-		const result = await getPool({
-			tokens: mockTokens,
-			chainId: mockChainId,
-			fee: FeeTier.MEDIUM,
-		});
+		const result = await getPool(
+			{
+				tokens: mockTokens,
+				fee: FeeTier.MEDIUM,
+			},
+			mockChainId,
+		);
 
-		expect(result.data).toBeUndefined();
-		expect(result.isLoading).toBe(false);
-		expect(result.error).toBeDefined();
+		expect(result).toBeUndefined();
 	});
 });

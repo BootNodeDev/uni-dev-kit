@@ -26,14 +26,12 @@ export type V4Contracts = {
  * Required for initializing and managing SDK instances.
  */
 export type UniDevKitV4Config = {
-	/** RPC URL for the chain */
-	rpcUrl: string;
 	/** Chain ID */
 	chainId: number;
+	/** RPC URL for the chain (optional) */
+	rpcUrl?: string;
 	/** Contract addresses */
 	contracts: V4Contracts;
-	/** Optional native currency configuration */
-	nativeCurrency?: { name: string; symbol: string; decimals: number };
 };
 
 /**

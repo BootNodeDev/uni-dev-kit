@@ -1,5 +1,5 @@
 import { getInstance } from "@/core/uniDevKitV4Factory";
-import { getTokenInstances } from "@/utils/getTokenInstance";
+import { getTokens } from "@/utils/getTokens";
 import { Token } from "@uniswap/sdk-core";
 import { type Address, erc20Abi } from "viem";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -9,13 +9,14 @@ vi.mock("@/core/uniDevKitV4Factory", () => ({
 	getInstance: vi.fn(),
 }));
 
-describe("getTokenInstances", () => {
+describe("getTokens", () => {
 	const mockClient = {
 		multicall: vi.fn(),
 	};
 
 	const mockSdk = {
 		getClient: () => mockClient,
+		getChainId: () => 1,
 	};
 
 	beforeEach(() => {
@@ -42,11 +43,12 @@ describe("getTokenInstances", () => {
 
 		mockClient.multicall.mockResolvedValueOnce(mockResults);
 
-		const result = await getTokenInstances({
+		const result = await getTokens({
 			addresses,
 			chainId: 1,
 		});
 
+		expect(result).not.toBeNull();
 		expect(result).toHaveLength(2);
 		expect(result?.[0]).toBeInstanceOf(Token);
 		expect(result?.[1]).toBeInstanceOf(Token);
@@ -83,7 +85,7 @@ describe("getTokenInstances", () => {
 		(getInstance as unknown as ReturnType<typeof vi.fn>).mockReturnValue(null);
 
 		await expect(
-			getTokenInstances({
+			getTokens({
 				addresses: ["0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984" as Address],
 				chainId: 1,
 			}),
@@ -93,7 +95,7 @@ describe("getTokenInstances", () => {
 	it("should return null when multicall fails", async () => {
 		mockClient.multicall.mockRejectedValueOnce(new Error("Multicall failed"));
 
-		const result = await getTokenInstances({
+		const result = await getTokens({
 			addresses: ["0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984" as Address],
 			chainId: 1,
 		});

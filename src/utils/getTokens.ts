@@ -6,16 +6,16 @@ import { type Address, erc20Abi } from "viem";
  * Retrieves Token instances for a list of token addresses on a specific chain.
  * @param {Object} params - The parameters object
  * @param {[Address, ...Address[]]} params.addresses - Array of token contract addresses (at least one)
- * @param {number} params.chainId - The chain ID where the tokens exist
+ * @param {number} params.chainId - The chain ID where the tokens exist (optional)
  * @returns {Promise<Token[] | null>} Array of Token instances or null if the operation fails
  * @throws {Error} If SDK instance is not found
  */
-export async function getTokenInstances({
+export async function getTokens({
 	addresses,
 	chainId,
 }: {
 	addresses: [Address, ...Address[]];
-	chainId: number;
+	chainId?: number;
 }): Promise<Token[] | null> {
 	const sdk = getInstance(chainId);
 
@@ -44,13 +44,14 @@ export async function getTokenInstances({
 			const symbol = results[resultIndex++] as string;
 			const name = results[resultIndex++] as string;
 			const decimals = results[resultIndex++] as number;
-
-			tokens.push(new Token(chainId, address, decimals, symbol, name) as Token);
+			tokens.push(
+				new Token(sdk.getChainId(), address, decimals, symbol, name) as Token,
+			);
 		}
 
 		return tokens;
 	} catch (err) {
-		console.error("getTokenInstances failed:", err);
+		console.error("getTokens failed:", err);
 		return null;
 	}
 }

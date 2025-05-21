@@ -19,12 +19,13 @@ npm install uniswap-dev-kit
 
 ## Quick Start
 
-### 1. Configure and create an SDK instance
+### 1. Configure and create SDK instances
 
 ```ts
 import { createInstance } from "uniswap-dev-kit";
 
-const config = {
+// Create instance for Ethereum mainnet
+createInstance({
   chainId: 1,
   rpcUrl: "https://eth.llamarpc.com",
   contracts: {
@@ -36,9 +37,29 @@ const config = {
     universalRouter: "0x...",
     permit2: "0x..."
   }
-};
+});
 
-createInstance(config);
+// Create instance for another chain (e.g., Base)
+createInstance({
+  chainId: 8453,
+  rpcUrl: "https://mainnet.base.org",
+  contracts: {
+    // Base Uniswap V4 contract addresses...
+  }
+});
+```
+
+The SDK automatically manages multiple instances based on chainId. When using hooks or utilities, just specify the chainId to use the corresponding instance:
+
+```ts
+// Will use Ethereum mainnet instance
+const ethPool = await getPool({ tokens: [...] }, 1);
+
+// Will use Base instance
+const basePool = await getPool({ tokens: [...] }, 8453);
+
+// If you only have one instance, chainId is optional
+const singleChainPool = await getPool({ tokens: [...] });
 ```
 
 ### 2. Get a quote (vanilla JS/TS)
@@ -47,16 +68,25 @@ createInstance(config);
 import { getQuote } from "uniswap-dev-kit";
 import { parseEther } from "viem";
 
-const quote = await getQuote({
-  tokens: [
-    "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
-    "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"  // WETH
-  ],
-  feeTier: 3000,
-  tickSpacing: 60,
-  amountIn: parseEther("1"),
-  zeroForOne: true
-});
+const quote = await getQuote(
+  {
+    tokens: [
+      "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
+      "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", // WETH
+    ],
+    feeTier: 3000,
+    tickSpacing: 60,
+    amountIn: parseEther("1"),
+  },
+  1,
+  {
+    enabled: true,
+    staleTime: 30000,
+    gcTime: 300000,
+    retry: 3,
+    onSuccess: (data) => console.log("Quote received:", data),
+  },
+);
 console.log(quote.amountOut);
 ```
 
@@ -79,7 +109,8 @@ function QuoteComponent() {
       tickSpacing: 60,
       amountIn: parseEther("1"),
       zeroForOne: true
-    }
+    },
+    chainId: 1
   });
 
   if (isLoading) return <span>Loading...</span>;
@@ -101,8 +132,8 @@ function PoolComponent() {
         "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
       ],
       fee: 3000,
-      chainId: 1
-    }
+    },
+    chainId: 1
   });
 
   if (isLoading) return <span>Loading...</span>;

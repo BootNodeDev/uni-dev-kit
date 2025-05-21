@@ -8,7 +8,7 @@ export * from "@/hooks/useGetQuote";
 
 // Utils
 export * from "@/utils/getQuote";
-export * from "@/utils/getTokenInstance";
+export * from "@/utils/getTokens";
 
 // Types
 export * from "@/types";

@@ -3,6 +3,7 @@ import type { UseGetPoolOptions } from "@/types/hooks/useGetPool";
 import { getPool } from "@/utils/getPool";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderHook, waitFor } from "@testing-library/react";
+import { Token } from "@uniswap/sdk-core";
 import { jsx as _jsx } from "react/jsx-runtime";
 import type { Mock } from "vitest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -35,18 +36,8 @@ describe("useGetPool", () => {
 
 	it("should fetch pool data successfully", async () => {
 		const mockPool = {
-			token0: {
-				address: USDC,
-				decimals: 6,
-				name: "USD Coin",
-				symbol: "USDC",
-			},
-			token1: {
-				address: WETH,
-				decimals: 18,
-				name: "Wrapped Ether",
-				symbol: "WETH",
-			},
+			token0: new Token(1, USDC, 6, "USDC", "USD Coin"),
+			token1: new Token(1, WETH, 18, "WETH", "Wrapped Ether"),
 			fee: 3000,
 			tickSpacing: 60,
 		};
@@ -59,8 +50,8 @@ describe("useGetPool", () => {
 					params: {
 						tokens: [USDC, WETH],
 						fee: 3000,
-						chainId: 1,
 					},
+					chainId: 1,
 				}),
 			{ wrapper },
 		);
@@ -73,11 +64,13 @@ describe("useGetPool", () => {
 		expect(result.current.error).toBeNull();
 		expect(result.current.isLoading).toBe(false);
 		expect(result.current.status).toBe("success");
-		expect(getPool).toHaveBeenCalledWith({
-			tokens: [USDC, WETH],
-			fee: 3000,
-			chainId: 1,
-		});
+		expect(getPool).toHaveBeenCalledWith(
+			{
+				tokens: [USDC, WETH],
+				fee: 3000,
+			},
+			1,
+		);
 	});
 
 	it("should handle errors", async () => {
@@ -92,8 +85,8 @@ describe("useGetPool", () => {
 					params: {
 						tokens: [USDC, WETH],
 						fee: 3000,
-						chainId: 1,
 					},
+					chainId: 1,
 				}),
 			{ wrapper },
 		);
@@ -118,18 +111,8 @@ describe("useGetPool", () => {
 
 	it("should handle custom query options", async () => {
 		const mockPool = {
-			token0: {
-				address: USDC,
-				decimals: 6,
-				name: "USD Coin",
-				symbol: "USDC",
-			},
-			token1: {
-				address: WETH,
-				decimals: 18,
-				name: "Wrapped Ether",
-				symbol: "WETH",
-			},
+			token0: new Token(1, USDC, 6, "USDC", "USD Coin"),
+			token1: new Token(1, WETH, 18, "WETH", "Wrapped Ether"),
 			fee: 3000,
 			tickSpacing: 60,
 		};
@@ -142,8 +125,8 @@ describe("useGetPool", () => {
 					params: {
 						tokens: [USDC, WETH],
 						fee: 3000,
-						chainId: 1,
 					},
+					chainId: 1,
 					queryOptions: {
 						enabled: true,
 						staleTime: 5000,
