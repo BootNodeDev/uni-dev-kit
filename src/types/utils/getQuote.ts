@@ -1,3 +1,4 @@
+import type { FeeTier } from "@/types/utils/getPool";
 import type { Address, Hex } from "viem";
 
 /**
@@ -10,14 +11,14 @@ export interface QuoteParams {
 	tokens: [Address, Address];
 
 	/**
-	 * The fee tier of the pool (e.g., 500, 3000, 10000).
+	 * The fee tier of the pool (e.g., FeeTier.MEDIUM).
 	 */
-	feeTier: number;
+	feeTier: FeeTier;
 
 	/**
-	 * The tick spacing for the pool. Must be a positive integer.
+	 * The tick spacing for the pool. If not provided, it will be derived from the fee tier.
 	 */
-	tickSpacing: number;
+	tickSpacing?: number;
 
 	/**
 	 * The amount of tokens being swapped, expressed as a bigint.

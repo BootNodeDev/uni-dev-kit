@@ -1,6 +1,7 @@
 import { V4QuoterAbi } from "@/constants/abis/V4Quoter";
 import { getInstance } from "@/core/uniDevKitV4Factory";
 import { sortTokens } from "@/helpers/tokens";
+import { FeeTier, TICK_SPACING_BY_FEE } from "@/types/utils/getPool";
 import type { QuoteParams, QuoteResponse } from "@/types/utils/getQuote";
 import { zeroAddress } from "viem";
 
@@ -35,12 +36,16 @@ export async function getQuote(
 			params.tokens[1],
 		);
 
+		// Use provided tick spacing or derive from fee tier
+		const fee = (params.feeTier ?? FeeTier.MEDIUM) as FeeTier;
+		const tickSpacing = params.tickSpacing ?? TICK_SPACING_BY_FEE[fee];
+
 		// Construct the poolKey
 		const poolKey = {
 			currency0,
 			currency1,
-			fee: params.feeTier,
-			tickSpacing: params.tickSpacing,
+			fee,
+			tickSpacing,
 			hooks: params.hooks || zeroAddress,
 		};
 
