@@ -31,9 +31,9 @@ describe("getPosition", () => {
 
 	it("should throw error if SDK instance not found", async () => {
 		mockGetInstance.mockReturnValueOnce(undefined);
-		await expect(getPosition(mockTokenId, mockChainId)).rejects.toThrow(
-			"SDK not initialized",
-		);
+		await expect(
+			getPosition({ tokenId: mockTokenId }, mockChainId),
+		).rejects.toThrow("SDK not found. Please create an instance first.");
 	});
 
 	it("should throw error if tokens not found", async () => {
@@ -59,9 +59,9 @@ describe("getPosition", () => {
 		});
 		mockGetTokens.mockResolvedValueOnce(null);
 
-		await expect(getPosition(mockTokenId, mockChainId)).rejects.toThrow(
-			"Tokens not found",
-		);
+		await expect(
+			getPosition({ tokenId: mockTokenId }, mockChainId),
+		).rejects.toThrow("Tokens not found");
 	});
 
 	it("should throw error if liquidity is 0", async () => {
@@ -91,9 +91,9 @@ describe("getPosition", () => {
 			new Token(1, mockTokens[1], 18, "WETH", "Wrapped Ether"),
 		]);
 
-		await expect(getPosition(mockTokenId, mockChainId)).rejects.toThrow(
-			"Liquidity is 0",
-		);
+		await expect(
+			getPosition({ tokenId: mockTokenId }, mockChainId),
+		).rejects.toThrow("Liquidity is 0");
 	});
 
 	it("should return position data when position exists", async () => {
@@ -137,15 +137,14 @@ describe("getPosition", () => {
 
 		mockGetTokens.mockResolvedValueOnce(mockTokenInstances);
 
-		const result = await getPosition(mockTokenId, mockChainId);
+		const result = await getPosition({ tokenId: mockTokenId }, mockChainId);
 
 		expect(result).toBeDefined();
 		expect(result?.token0).toEqual(mockTokenInstances[0]);
 		expect(result?.token1).toEqual(mockTokenInstances[1]);
-		expect(result?.liquidity).toBe(BigInt("1000000000000000000"));
-		expect(result?.amounts).toBeDefined();
-		expect(result?.tickLower).toBeDefined();
-		expect(result?.tickUpper).toBeDefined();
+		expect(result?.position).toBeDefined();
+		expect(result?.pool).toBeDefined();
 		expect(result?.poolId).toBeDefined();
+		expect(result?.tokenId).toBe(mockTokenId);
 	});
 });
