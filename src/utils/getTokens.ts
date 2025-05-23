@@ -1,6 +1,7 @@
+import { getChainById } from "@/constants/chains";
 import { getInstance } from "@/core/uniDevKitV4Factory";
 import { Token } from "@uniswap/sdk-core";
-import { type Address, erc20Abi } from "viem";
+import { type Address, erc20Abi, zeroAddress } from "viem";
 
 /**
  * Retrieves Token instances for a list of token addresses on a specific chain.
@@ -18,6 +19,8 @@ export async function getTokens({
 	chainId?: number;
 }): Promise<Token[] | null> {
 	const sdk = getInstance(chainId);
+	const currentChainId = chainId || sdk.getChainId();
+	const chain = getChainById(currentChainId);
 
 	if (!sdk) {
 		throw new Error("SDK not found. Please create an instance first.");
@@ -25,11 +28,13 @@ export async function getTokens({
 
 	const client = sdk.getClient();
 
-	const calls = addresses.flatMap((address) => [
-		{ address, abi: erc20Abi, functionName: "symbol" },
-		{ address, abi: erc20Abi, functionName: "name" },
-		{ address, abi: erc20Abi, functionName: "decimals" },
-	]);
+	const calls = addresses
+		.filter((address) => address !== zeroAddress) // filter out native currency
+		.flatMap((address) => [
+			{ address, abi: erc20Abi, functionName: "symbol" },
+			{ address, abi: erc20Abi, functionName: "name" },
+			{ address, abi: erc20Abi, functionName: "decimals" },
+		]);
 
 	try {
 		const results = await client.multicall({
@@ -41,12 +46,25 @@ export async function getTokens({
 		let resultIndex = 0;
 
 		for (const address of addresses) {
-			const symbol = results[resultIndex++] as string;
-			const name = results[resultIndex++] as string;
-			const decimals = results[resultIndex++] as number;
-			tokens.push(
-				new Token(sdk.getChainId(), address, decimals, symbol, name) as Token,
-			);
+			if (address === zeroAddress) {
+				// For native currency, use chain data from wagmi
+				const nativeCurrency = chain.nativeCurrency;
+				tokens.push(
+					new Token(
+						currentChainId,
+						address,
+						nativeCurrency.decimals,
+						nativeCurrency.symbol,
+						nativeCurrency.name,
+					),
+				);
+			} else {
+				// For ERC20 tokens, use multicall results
+				const symbol = results[resultIndex++] as string;
+				const name = results[resultIndex++] as string;
+				const decimals = results[resultIndex++] as number;
+				tokens.push(new Token(currentChainId, address, decimals, symbol, name));
+			}
 		}
 
 		return tokens;
