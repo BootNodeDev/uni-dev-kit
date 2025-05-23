@@ -44,14 +44,18 @@ describe("useGetPosition", () => {
 				"WETH",
 				"Wrapped Ether",
 			),
-			amounts: {
-				amount0: "1000000",
-				amount1: "1000000000000000000",
+			position: {
+				amounts: {
+					amount0: "1000000",
+					amount1: "1000000000000000000",
+				},
+				tickLower: -100,
+				tickUpper: 100,
+				liquidity: BigInt("1000000000000000000"),
 			},
-			tickLower: -100,
-			tickUpper: 100,
-			liquidity: BigInt("1000000000000000000"),
+			pool: {},
 			poolId: "0x1234567890123456789012345678901234567890",
+			tokenId: "123",
 		};
 
 		(getPosition as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
@@ -75,7 +79,7 @@ describe("useGetPosition", () => {
 		});
 
 		expect(result.current.data).toEqual(mockPosition);
-		expect(getPosition).toHaveBeenCalledWith("123", 1);
+		expect(getPosition).toHaveBeenCalledWith({ tokenId: "123" }, 1);
 	});
 
 	it("should handle errors", async () => {
@@ -122,14 +126,18 @@ describe("useGetPosition", () => {
 				"WETH",
 				"Wrapped Ether",
 			),
-			amounts: {
-				amount0: "1000000",
-				amount1: "1000000000000000000",
+			position: {
+				amounts: {
+					amount0: "1000000",
+					amount1: "1000000000000000000",
+				},
+				tickLower: -100,
+				tickUpper: 100,
+				liquidity: BigInt("1000000000000000000"),
 			},
-			tickLower: -100,
-			tickUpper: 100,
-			liquidity: BigInt("1000000000000000000"),
+			pool: {},
 			poolId: "0x1234567890123456789012345678901234567890",
+			tokenId: "123",
 		};
 
 		(getPosition as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce(

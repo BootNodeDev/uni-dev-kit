@@ -41,7 +41,7 @@ export function useGetPosition({
 		unknown[]
 	>({
 		queryKey: ["position", tokenId, chainId],
-		queryFn: () => getPosition(tokenId, chainId),
+		queryFn: () => getPosition({ tokenId }, chainId),
 		...queryOptions,
 	});
 }
