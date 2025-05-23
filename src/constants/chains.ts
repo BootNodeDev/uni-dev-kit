@@ -1,32 +1,23 @@
 import {
+	type Chain,
 	arbitrum,
+	arbitrumSepolia,
 	avalanche,
 	base,
+	baseSepolia,
 	blast,
 	bsc,
 	celo,
 	mainnet,
 	optimism,
 	polygon,
+	sepolia,
+	unichain,
+	unichainSepolia,
 	worldchain,
 	zksync,
 	zora,
 } from "wagmi/chains";
-// uniswap supported chains
-/* 
-Ethereum
-Arbitrum
-Optimism
-Polygon
-Base
-BNB
-Avalanche C-Chain
-CELO
-Blast
-ZKsync
-Zora
-WorldChain
-*/
 
 export const supportedChains = [
 	arbitrum,
@@ -40,11 +31,21 @@ export const supportedChains = [
 	zksync,
 	zora,
 	worldchain,
+	unichain,
 	mainnet,
 ] as const;
 
-export const getChainById = (chainId: number) => {
-	const chain = supportedChains.find((chain) => chain.id === chainId);
+export const testChains = [
+	unichainSepolia,
+	sepolia,
+	baseSepolia,
+	arbitrumSepolia,
+] as const;
+
+export const getChainById = (chainId: number): Chain => {
+	const chain = [...supportedChains, ...testChains].find(
+		(chain) => chain.id === chainId,
+	);
 	if (!chain) {
 		throw new Error(`Chain with id ${chainId} not found`);
 	}
