@@ -8,10 +8,13 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        
+        with:
+          fetch-depth: 0
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -19,24 +22,18 @@ jobs:
           registry-url: 'https://registry.npmjs.org/'
 
       - name: Install pnpm
-        run: npm install -g pnpm
-        
-      - name: Install Dependencies
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies
         run: pnpm install
-        
-      - name: Build Package
+
+      - name: Build package
         run: pnpm run build
 
-      - name: Create v0.0.0 tag if missing
-        run: |
-          git fetch --tags
-          if ! git tag | grep -q v0.0.0; then
-            git tag v0.0.0
-            git push origin v0.0.0
-          fi
-
       - name: Run Semantic Release
-        run: npx semantic-release
+        uses: cycjimmy/semantic-release-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
