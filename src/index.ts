@@ -4,6 +4,7 @@ export * from "@/core/uniDevKitV4Factory";
 
 // Hooks
 export * from "@/hooks/useGetPool";
+export * from "@/hooks/useGetPosition";
 export * from "@/hooks/useGetQuote";
 
 // Utils
