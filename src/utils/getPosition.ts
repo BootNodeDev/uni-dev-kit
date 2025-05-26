@@ -2,34 +2,34 @@ import { V4PositionManagerAbi } from "@/constants/abis/V4PositionMananger";
 import { V4StateViewAbi } from "@/constants/abis/V4StateView";
 import { getInstance } from "@/core/uniDevKitV4Factory";
 import { decodePositionInfo } from "@/helpers/positions";
+import type {
+	GetPositionParams,
+	GetPositionResponse,
+} from "@/types/utils/getPosition";
 import { getTokens } from "@/utils/getTokens";
-import type { Token } from "@uniswap/sdk-core";
 import { Pool, Position as V4Position } from "@uniswap/v4-sdk";
 
-interface PositionResult {
-	token0: Token;
-	token1: Token;
-	amounts: {
-		amount0: string;
-		amount1: string;
-	};
-	tickLower: number;
-	tickUpper: number;
-	liquidity: bigint;
-	poolId: `0x${string}`;
-}
-
+/**
+ * Retrieves a Uniswap V4 position instance for a given token ID.
+ * @param params Position parameters including token ID
+ * @param chainId Optional chain ID where the position exists
+ * @returns Promise resolving to position data
+ * @throws Error if SDK instance is not found or if position data is invalid
+ */
 export async function getPosition(
-	tokenId: string,
+	params: GetPositionParams,
 	chainId?: number,
-): Promise<PositionResult | undefined> {
+): Promise<GetPositionResponse> {
 	const sdk = getInstance(chainId);
-	if (!sdk) throw new Error("SDK not initialized");
+	if (!sdk) {
+		throw new Error("SDK not found. Please create an instance first.");
+	}
 
 	const client = sdk.getClient();
 	const positionManager = sdk.getContractAddress("positionManager");
 	const stateView = sdk.getContractAddress("stateView");
 
+	// Fetch poolKey and raw position info
 	const [poolAndPositionInfo, liquidity] = await client.multicall({
 		allowFailure: false,
 		contracts: [
@@ -37,23 +37,19 @@ export async function getPosition(
 				address: positionManager,
 				abi: V4PositionManagerAbi,
 				functionName: "getPoolAndPositionInfo",
-				args: [BigInt(tokenId)],
+				args: [BigInt(params.tokenId)],
 			},
 			{
 				address: positionManager,
 				abi: V4PositionManagerAbi,
 				functionName: "getPositionLiquidity",
-				args: [BigInt(tokenId)],
+				args: [BigInt(params.tokenId)],
 			},
 		],
 	});
 
 	const [poolKey, rawInfo] = poolAndPositionInfo;
-
 	const { currency0, currency1, fee, tickSpacing, hooks } = poolKey;
-
-	console.log("poolKey", poolKey);
-	console.log("rawInfo", rawInfo);
 
 	if (liquidity === 0n) {
 		throw new Error("Liquidity is 0");
@@ -119,15 +115,11 @@ export async function getPosition(
 	});
 
 	return {
+		position,
+		pool,
 		token0,
 		token1,
-		amounts: {
-			amount0: position.amount0.toSignificant(6),
-			amount1: position.amount1.toSignificant(6),
-		},
-		tickLower,
-		tickUpper,
-		liquidity,
 		poolId,
+		tokenId: params.tokenId,
 	};
 }

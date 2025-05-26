@@ -1,29 +1,23 @@
 import type { UseQueryOptions } from "@tanstack/react-query";
 import type { Token } from "@uniswap/sdk-core";
+import type { Pool, Position } from "@uniswap/v4-sdk";
 
 /**
  * Result type for position data
  */
 export interface PositionResult {
+	/** The position instance */
+	position: Position;
+	/** The pool instance associated with the position */
+	pool: Pool;
 	/** First token in the pair */
 	token0: Token;
 	/** Second token in the pair */
 	token1: Token;
-	/** Token amounts in the position */
-	amounts: {
-		/** Amount of token0 */
-		amount0: string;
-		/** Amount of token1 */
-		amount1: string;
-	};
-	/** Lower tick boundary of the position */
-	tickLower: number;
-	/** Upper tick boundary of the position */
-	tickUpper: number;
-	/** Total liquidity in the position */
-	liquidity: bigint;
 	/** Unique identifier for the pool */
 	poolId: `0x${string}`;
+	/** The unique identifier of the position */
+	tokenId: string;
 }
 
 /**
