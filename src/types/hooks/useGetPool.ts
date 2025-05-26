@@ -7,7 +7,7 @@ import type { Pool } from "@uniswap/v4-sdk";
  */
 export type UseGetPoolOptions = {
 	/** Initial pool parameters */
-	params?: PoolParams;
+	params: PoolParams;
 	/** Chain ID */
 	chainId?: number;
 	/** React Query options */
