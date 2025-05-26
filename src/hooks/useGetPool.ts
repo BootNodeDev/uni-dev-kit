@@ -1,5 +1,4 @@
 import type { UseGetPoolOptions } from "@/types/hooks/useGetPool";
-import type { PoolParams } from "@/types/utils/getPool";
 import { getPool } from "@/utils/getPool";
 import { useQuery } from "@tanstack/react-query";
 import type { Pool } from "@uniswap/v4-sdk";
@@ -30,22 +29,21 @@ import type { Pool } from "@uniswap/v4-sdk";
  * });
  * ```
  */
-function serializeParams(params?: PoolParams) {
-	if (!params) return undefined;
-	return {
-		...params,
-		tokens: params.tokens.map((t) => t.toLowerCase()),
-	};
-}
 
 export function useGetPool({
 	params,
 	chainId,
 	queryOptions = {},
-}: UseGetPoolOptions = {}) {
-	if (!params) throw new Error("No params provided");
+}: UseGetPoolOptions) {
 	return useQuery<Pool | undefined, Error, Pool | undefined, unknown[]>({
-		queryKey: ["pool", serializeParams(params), chainId],
+		queryKey: [
+			"pool",
+			params.fee,
+			params.tokens,
+			params.hooks,
+			params.tickSpacing,
+			chainId,
+		],
 		queryFn: () => getPool(params, chainId),
 		...queryOptions,
 	});
