@@ -1,6 +1,6 @@
 import { V4QuoterAbi } from "@/constants/abis/V4Quoter";
-import { getInstance } from "@/core/uniDevKitV4Factory";
 import { sortTokens } from "@/helpers/tokens";
+import type { UniDevKitV4Instance } from "@/types/core";
 import { FeeTier, TICK_SPACING_BY_FEE } from "@/types/utils/getPool";
 import type { QuoteParams, QuoteResponse } from "@/types/utils/getQuote";
 import { zeroAddress } from "viem";
@@ -20,14 +20,10 @@ import { zeroAddress } from "viem";
  */
 export async function getQuote(
 	params: QuoteParams,
-	chainId?: number,
+	instance: UniDevKitV4Instance,
 ): Promise<QuoteResponse> {
-	const sdk = getInstance(chainId);
-	if (!sdk) {
-		throw new Error("SDK not found. Please create an instance first.");
-	}
-	const client = sdk.getClient();
-	const quoterAddress = sdk.getContractAddress("quoter");
+	const { client, contracts } = instance;
+	const { quoter } = contracts;
 
 	try {
 		// Sort tokens to ensure consistent pool key ordering
@@ -59,7 +55,7 @@ export async function getQuote(
 
 		// Simulate the quote to estimate the amount out
 		const simulation = await client.simulateContract({
-			address: quoterAddress,
+			address: quoter,
 			abi: V4QuoterAbi,
 			functionName: "quoteExactInputSingle",
 			args: [quoteParams],

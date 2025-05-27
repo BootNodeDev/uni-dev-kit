@@ -1,32 +1,21 @@
-import { getChainById } from "@/constants/chains";
-import { getInstance } from "@/core/uniDevKitV4Factory";
+import type { UniDevKitV4Instance } from "@/types/core";
+import type { GetTokensParams } from "@/types/utils/getTokens";
 import { Token } from "@uniswap/sdk-core";
-import { type Address, erc20Abi, zeroAddress } from "viem";
+import { erc20Abi, zeroAddress } from "viem";
 
 /**
  * Retrieves Token instances for a list of token addresses on a specific chain.
- * @param {Object} params - The parameters object
- * @param {[Address, ...Address[]]} params.addresses - Array of token contract addresses (at least one)
- * @param {number} params.chainId - The chain ID where the tokens exist (optional)
- * @returns {Promise<Token[] | null>} Array of Token instances or null if the operation fails
- * @throws {Error} If SDK instance is not found
+ * @param params Parameters including token addresses
+ * @param instance UniDevKitV4Instance
+ * @returns Promise resolving to array of Token instances
+ * @throws Error if token data cannot be fetched
  */
-export async function getTokens({
-	addresses,
-	chainId,
-}: {
-	addresses: [Address, ...Address[]];
-	chainId?: number;
-}): Promise<Token[] | null> {
-	const sdk = getInstance(chainId);
-	const currentChainId = chainId || sdk.getChainId();
-	const chain = getChainById(currentChainId);
-
-	if (!sdk) {
-		throw new Error("SDK not found. Please create an instance first.");
-	}
-
-	const client = sdk.getClient();
+export async function getTokens(
+	params: GetTokensParams,
+	instance: UniDevKitV4Instance,
+): Promise<Token[]> {
+	const { addresses } = params;
+	const { client, chain } = instance;
 
 	const calls = addresses
 		.filter((address) => address !== zeroAddress) // filter out native currency
@@ -51,7 +40,7 @@ export async function getTokens({
 				const nativeCurrency = chain.nativeCurrency;
 				tokens.push(
 					new Token(
-						currentChainId,
+						chain.id,
 						address,
 						nativeCurrency.decimals,
 						nativeCurrency.symbol,
@@ -63,13 +52,12 @@ export async function getTokens({
 				const symbol = results[resultIndex++] as string;
 				const name = results[resultIndex++] as string;
 				const decimals = results[resultIndex++] as number;
-				tokens.push(new Token(currentChainId, address, decimals, symbol, name));
+				tokens.push(new Token(chain.id, address, decimals, symbol, name));
 			}
 		}
 
 		return tokens;
 	} catch (err) {
-		console.error("getTokens failed:", err);
-		return null;
+		throw new Error(`Failed to fetch token data: ${(err as Error).message}`);
 	}
 }

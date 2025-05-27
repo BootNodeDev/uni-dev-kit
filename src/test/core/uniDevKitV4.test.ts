@@ -43,7 +43,7 @@ describe("UniDevKitV4", () => {
 			chainId: 8453,
 			rpcUrl: "https://base-rpc.com",
 		};
-		sdk.updateConfig(newConfig);
+		sdk = new UniDevKitV4(newConfig);
 		expect(sdk.getChainId()).toBe(newConfig.chainId);
 	});
 

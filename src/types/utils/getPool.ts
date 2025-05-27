@@ -31,6 +31,6 @@ export interface PoolParams {
 	fee?: FeeTier;
 	/** Optional tick spacing for the pool (default: derived from fee tier) */
 	tickSpacing?: number;
-	/** Optional hooks contract address (default: zero address) */
+	/** Optional hooks contract address (default: DEFAULT_HOOKS) */
 	hooks?: `0x${string}`;
 }
