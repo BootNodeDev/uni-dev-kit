@@ -1,5 +1,20 @@
 import { getChainById } from "@/constants/chains";
 import type { UniDevKitV4Config, UniDevKitV4Instance } from "@/types/core";
+import type { PoolParams } from "@/types/utils/getPool";
+import type { GetPoolKeyFromPoolIdParams } from "@/types/utils/getPoolKeyFromPoolId";
+import type {
+	GetPositionParams,
+	GetPositionResponse,
+} from "@/types/utils/getPosition";
+import type { QuoteParams, QuoteResponse } from "@/types/utils/getQuote";
+import type { GetTokensParams } from "@/types/utils/getTokens";
+import { getPool } from "@/utils/getPool";
+import { getPoolKeyFromPoolId } from "@/utils/getPoolKeyFromPoolId";
+import { getPosition } from "@/utils/getPosition";
+import { getQuote } from "@/utils/getQuote";
+import { getTokens } from "@/utils/getTokens";
+import type { Token } from "@uniswap/sdk-core";
+import type { Pool, PoolKey } from "@uniswap/v4-sdk";
 import {
 	http,
 	type Address,
@@ -21,38 +36,17 @@ export class UniDevKitV4 {
 	 * @throws Will throw an error if the configuration is invalid.
 	 */
 	constructor(config: UniDevKitV4Config) {
-		this.instance = this.createInstance(config);
-	}
+		const chain = getChainById(config.chainId);
+		const client = createPublicClient({
+			chain,
+			transport: http(config.rpcUrl || chain.rpcUrls.default.http[0]),
+		});
 
-	/**
-	 * Creates a new internal instance for the SDK.
-	 * This method is used internally to reset the instance when the configuration changes.
-	 * @param config - The complete configuration for the SDK.
-	 * @returns A new instance of UniDevKitV4.
-	 */
-	private createInstance(config: UniDevKitV4Config): UniDevKitV4Instance {
-		const client = this.createClient(config);
-		return {
+		this.instance = {
 			client: client as PublicClient,
-			chainId: config.chainId,
+			chain,
 			contracts: config.contracts,
 		};
-	}
-
-	/**
-	 * Creates a new PublicClient for the specified chain ID and RPC URL.
-	 * @param config - The complete configuration for the SDK.
-	 * @returns A new PublicClient instance.
-	 */
-	private createClient(config: UniDevKitV4Config) {
-		const { chainId, rpcUrl } = config;
-
-		const chain = getChainById(chainId);
-
-		return createPublicClient({
-			chain,
-			transport: http(rpcUrl || chain.rpcUrls.default.http[0]),
-		});
 	}
 
 	/**
@@ -68,7 +62,7 @@ export class UniDevKitV4 {
 	 * @returns The chain ID currently configured.
 	 */
 	getChainId(): number {
-		return this.instance.chainId;
+		return this.instance.chain.id;
 	}
 
 	/**
@@ -94,12 +88,48 @@ export class UniDevKitV4 {
 	}
 
 	/**
-	 * Updates the SDK configuration with a complete new set of parameters.
-	 * This method will reset the client and instance to reflect the new configuration.
-	 * @param config - The complete configuration for the SDK.
-	 * @throws Will throw an error if the configuration is invalid.
+	 * Retrieves a Uniswap V4 pool instance for a given token pair.
+	 * @param params Pool parameters including tokens, fee tier, tick spacing, and hooks configuration
+	 * @returns Promise resolving to pool data
+	 * @throws Error if pool data cannot be fetched
 	 */
-	updateConfig(config: UniDevKitV4Config): void {
-		this.instance = this.createInstance(config);
+	async getPool(params: PoolParams): Promise<Pool> {
+		return getPool(params, this.instance);
+	}
+
+	/**
+	 * Retrieves token information for a given array of token addresses.
+	 * @param params Parameters including token addresses
+	 * @returns Promise resolving to Token instances for each token address.
+	 * @throws Error if token data cannot be fetched
+	 */
+	async getTokens(params: GetTokensParams): Promise<Token[]> {
+		return getTokens(params, this.instance);
+	}
+
+	/**
+	 * Retrieves a Uniswap V4 position information for a given token ID.
+	 * @param params Position parameters including token ID
+	 * @returns Promise resolving to position data including pool, token0, token1, poolId, and tokenId
+	 * @throws Error if SDK instance is not found or if position data is invalid
+	 */
+	async getPosition(params: GetPositionParams): Promise<GetPositionResponse> {
+		return getPosition(params, this.instance);
+	}
+
+	/**
+	 * Retrieves a Uniswap V4 quote for a given token pair and amount in.
+	 * @param params Quote parameters including token pair and amount in
+	 * @returns Promise resolving to quote data including amount out, estimated gas used, and timestamp
+	 * @throws Error if SDK instance is not found or if quote data is invalid
+	 */
+	async getQuote(params: QuoteParams): Promise<QuoteResponse> {
+		return getQuote(params, this.instance);
+	}
+
+	async getPoolKeyFromPoolId(
+		params: GetPoolKeyFromPoolIdParams,
+	): Promise<PoolKey> {
+		return getPoolKeyFromPoolId(params, this.instance);
 	}
 }

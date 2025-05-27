@@ -1,7 +1,7 @@
 import { V4PositionManagerAbi } from "@/constants/abis/V4PositionMananger";
 import { V4StateViewAbi } from "@/constants/abis/V4StateView";
-import { getInstance } from "@/core/uniDevKitV4Factory";
 import { decodePositionInfo } from "@/helpers/positions";
+import type { UniDevKitV4Instance } from "@/types/core";
 import type {
 	GetPositionParams,
 	GetPositionResponse,
@@ -12,22 +12,17 @@ import { Pool, Position as V4Position } from "@uniswap/v4-sdk";
 /**
  * Retrieves a Uniswap V4 position instance for a given token ID.
  * @param params Position parameters including token ID
- * @param chainId Optional chain ID where the position exists
+ * @param instance UniDevKitV4Instance
  * @returns Promise resolving to position data
  * @throws Error if SDK instance is not found or if position data is invalid
  */
 export async function getPosition(
 	params: GetPositionParams,
-	chainId?: number,
+	instance: UniDevKitV4Instance,
 ): Promise<GetPositionResponse> {
-	const sdk = getInstance(chainId);
-	if (!sdk) {
-		throw new Error("SDK not found. Please create an instance first.");
-	}
+	const { client, contracts } = instance;
 
-	const client = sdk.getClient();
-	const positionManager = sdk.getContractAddress("positionManager");
-	const stateView = sdk.getContractAddress("stateView");
+	const { positionManager, stateView } = contracts;
 
 	// Fetch poolKey and raw position info
 	const [poolAndPositionInfo, liquidity] = await client.multicall({
@@ -55,10 +50,12 @@ export async function getPosition(
 		throw new Error("Liquidity is 0");
 	}
 
-	const tokens = await getTokens({
-		addresses: [currency0, currency1],
-		chainId,
-	});
+	const tokens = await getTokens(
+		{
+			addresses: [currency0, currency1],
+		},
+		instance,
+	);
 
 	if (!tokens) {
 		throw new Error("Tokens not found");

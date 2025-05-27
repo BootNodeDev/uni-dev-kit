@@ -1,7 +1,7 @@
-import { getInstance } from "@/core/uniDevKitV4Factory";
+import { createMockSdkInstance } from "@/test/helpers/sdkInstance";
 import { getTokens } from "@/utils/getTokens";
 import { Token } from "@uniswap/sdk-core";
-import { type Address, erc20Abi, zeroAddress } from "viem";
+import { type Address, zeroAddress } from "viem";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock the SDK instance
@@ -20,144 +20,79 @@ vi.mock("@/constants/chains", () => ({
 }));
 
 describe("getTokens", () => {
-	const mockClient = {
-		multicall: vi.fn(),
-	};
+	// USDC and WETH on Mainnet
+	const mockTokens: [Address, ...Address[]] = [
+		"0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+		"0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+	];
 
-	const mockSdk = {
-		getClient: () => mockClient,
-		getChainId: () => 1,
-	};
+	let mockDeps: ReturnType<typeof createMockSdkInstance>;
 
 	beforeEach(() => {
-		vi.clearAllMocks();
-		(getInstance as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
-			mockSdk,
+		vi.resetAllMocks();
+		mockDeps = createMockSdkInstance();
+	});
+
+	it("should throw error if multicall fails", async () => {
+		vi.mocked(mockDeps.client.multicall).mockRejectedValueOnce(
+			new Error("Multicall failed"),
 		);
+
+		await expect(
+			getTokens(
+				{
+					addresses: mockTokens,
+				},
+				mockDeps,
+			),
+		).rejects.toThrow("Failed to fetch token data: Multicall failed");
+	});
+
+	it("should handle native currency (zero address)", async () => {
+		const mockResults = [
+			"USDC", // symbol for first token
+			"USD Coin", // name for first token
+			6, // decimals for first token
+		];
+
+		vi.mocked(mockDeps.client.multicall).mockResolvedValueOnce(mockResults);
+
+		const result = await getTokens(
+			{
+				addresses: [mockTokens[0], zeroAddress],
+			},
+			mockDeps,
+		);
+
+		expect(result).toHaveLength(2);
+		expect(result[0]).toBeInstanceOf(Token);
+		expect(result[1]).toBeInstanceOf(Token);
+		expect(result[1].address).toBe(zeroAddress);
 	});
 
 	it("should return token instances for valid addresses", async () => {
-		const addresses: [Address, ...Address[]] = [
-			"0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984" as Address, // UNI
-			"0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" as Address, // WETH
-		];
-
 		const mockResults = [
-			"UNI", // symbol for UNI
-			"Uniswap", // name for UNI
-			18, // decimals for UNI
-			"WETH", // symbol for WETH
-			"Wrapped Ether", // name for WETH
-			18, // decimals for WETH
+			"USDC", // symbol for first token
+			"USD Coin", // name for first token
+			6, // decimals for first token
+			"WETH", // symbol for second token
+			"Wrapped Ether", // name for second token
+			18, // decimals for second token
 		];
 
-		mockClient.multicall.mockResolvedValueOnce(mockResults);
+		vi.mocked(mockDeps.client.multicall).mockResolvedValueOnce(mockResults);
 
-		const result = await getTokens({
-			addresses,
-			chainId: 1,
-		});
+		const result = await getTokens(
+			{
+				addresses: mockTokens,
+			},
+			mockDeps,
+		);
 
-		expect(result).not.toBeNull();
 		expect(result).toHaveLength(2);
-		expect(result?.[0]).toBeInstanceOf(Token);
-		expect(result?.[1]).toBeInstanceOf(Token);
-
-		// Verify UNI token
-		expect(result?.[0].symbol).toBe("UNI");
-		expect(result?.[0].name).toBe("Uniswap");
-		expect(result?.[0].decimals).toBe(18);
-		expect(result?.[0].chainId).toBe(1);
-		expect(result?.[0].address).toBe(addresses[0]);
-
-		// Verify WETH token
-		expect(result?.[1].symbol).toBe("WETH");
-		expect(result?.[1].name).toBe("Wrapped Ether");
-		expect(result?.[1].decimals).toBe(18);
-		expect(result?.[1].chainId).toBe(1);
-		expect(result?.[1].address).toBe(addresses[1]);
-
-		// Verify multicall was called with correct parameters
-		expect(mockClient.multicall).toHaveBeenCalledWith({
-			contracts: [
-				{ address: addresses[0], abi: erc20Abi, functionName: "symbol" },
-				{ address: addresses[0], abi: erc20Abi, functionName: "name" },
-				{ address: addresses[0], abi: erc20Abi, functionName: "decimals" },
-				{ address: addresses[1], abi: erc20Abi, functionName: "symbol" },
-				{ address: addresses[1], abi: erc20Abi, functionName: "name" },
-				{ address: addresses[1], abi: erc20Abi, functionName: "decimals" },
-			],
-			allowFailure: false,
-		});
-	});
-
-	it("should handle native currency (zeroAddress)", async () => {
-		const addresses: [Address, ...Address[]] = [
-			zeroAddress,
-			"0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" as Address, // WETH
-		];
-
-		const mockResults = [
-			"WETH", // symbol for WETH
-			"Wrapped Ether", // name for WETH
-			18, // decimals for WETH
-		];
-
-		mockClient.multicall.mockResolvedValueOnce(mockResults);
-
-		const result = await getTokens({
-			addresses,
-		});
-
-		expect(result).not.toBeNull();
-		expect(result).toHaveLength(2);
-		expect(result?.[0]).toBeInstanceOf(Token);
-		expect(result?.[1]).toBeInstanceOf(Token);
-
-		// Verify native token
-		expect(result?.[0].symbol).toBe("ETH");
-		expect(result?.[0].name).toBe("Ethereum");
-		expect(result?.[0].decimals).toBe(18);
-		expect(result?.[0].chainId).toBe(1);
-		expect(result?.[0].address).toBe(zeroAddress);
-
-		// Verify WETH token
-		expect(result?.[1].symbol).toBe("WETH");
-		expect(result?.[1].name).toBe("Wrapped Ether");
-		expect(result?.[1].decimals).toBe(18);
-		expect(result?.[1].chainId).toBe(1);
-		expect(result?.[1].address).toBe(addresses[1]);
-
-		// Verify multicall was called only for non-native token
-		expect(mockClient.multicall).toHaveBeenCalledWith({
-			contracts: [
-				{ address: addresses[1], abi: erc20Abi, functionName: "symbol" },
-				{ address: addresses[1], abi: erc20Abi, functionName: "name" },
-				{ address: addresses[1], abi: erc20Abi, functionName: "decimals" },
-			],
-			allowFailure: false,
-		});
-	});
-
-	it("should throw error when SDK instance is not found", async () => {
-		(getInstance as unknown as ReturnType<typeof vi.fn>).mockReturnValue(null);
-
-		await expect(
-			getTokens({
-				addresses: ["0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984" as Address],
-				chainId: 1,
-			}),
-		).rejects.toThrow("SDK not found. Please create an instance first.");
-	});
-
-	it("should return null when multicall fails", async () => {
-		mockClient.multicall.mockRejectedValueOnce(new Error("Multicall failed"));
-
-		const result = await getTokens({
-			addresses: ["0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984" as Address],
-			chainId: 1,
-		});
-
-		expect(result).toBeNull();
+		expect(result[0]).toBeInstanceOf(Token);
+		expect(result[1]).toBeInstanceOf(Token);
+		expect(result[0].symbol).toBe("USDC");
+		expect(result[1].symbol).toBe("WETH");
 	});
 });

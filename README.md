@@ -7,7 +7,14 @@
 > Modern TypeScript SDK for integrating Uniswap V4 into your dapp.  
 > **Early version:** API may change rapidly.
 
----
+## Features
+
+- 🚀 Full TypeScript support
+- 🔄 Multi-chain support out of the box
+- 📦 Zero dependencies (except peer deps)
+- 🔍 Comprehensive error handling
+- 🧪 Fully tested
+- 📚 Well documented
 
 ## Install
 
@@ -22,10 +29,10 @@ npm install uniswap-dev-kit
 ### 1. Configure and create SDK instances
 
 ```ts
-import { createInstance } from "uniswap-dev-kit";
+import { UniDevKitV4 } from "uniswap-dev-kit";
 
 // Create instance for Ethereum mainnet
-createInstance({
+const ethInstance = new UniDevKitV4({
   chainId: 1,
   rpcUrl: "https://eth.llamarpc.com",
   contracts: {
@@ -40,7 +47,7 @@ createInstance({
 });
 
 // Create instance for another chain (e.g., Base)
-createInstance({
+const baseInstance = new UniDevKitV4({
   chainId: 8453,
   rpcUrl: "https://mainnet.base.org",
   contracts: {
@@ -49,96 +56,104 @@ createInstance({
 });
 ```
 
-The SDK automatically manages multiple instances based on chainId. When using hooks or utilities, just specify the chainId to use the corresponding instance:
+### 2. Get a quote
 
 ```ts
-// Will use Ethereum mainnet instance
-const ethPool = await getPool({ tokens: [...] }, 1);
-
-// Will use Base instance
-const basePool = await getPool({ tokens: [...] }, 8453);
-
-// If you only have one instance, chainId is optional
-const singleChainPool = await getPool({ tokens: [...] });
-```
-
-### 2. Get a quote (vanilla JS/TS)
-
-```ts
-import { getQuote } from "uniswap-dev-kit";
 import { parseEther } from "viem";
 
-const quote = await getQuote(
-  {
-    tokens: [
-      "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
-      "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", // WETH
-    ],
-    feeTier: 3000,
-    tickSpacing: 60,
-    amountIn: parseEther("1"),
-  },
-  1,
-  {
-    enabled: true,
-    staleTime: 30000,
-    gcTime: 300000,
-    retry: 3,
-    onSuccess: (data) => console.log("Quote received:", data),
-  },
-);
+const quote = await ethInstance.getQuote({
+  tokens: [
+    "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
+    "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", // WETH
+  ],
+  feeTier: 3000,
+  amountIn: parseEther("1"),
+  zeroForOne: true
+});
 console.log(quote.amountOut);
 ```
 
-### 3. Use in React (with hooks)
+### 3. Get a pool
 
-#### Get a quote
+```ts
+const pool = await ethInstance.getPool({
+  tokens: [
+    "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+  ],
+  feeTier: 3000
+});
+console.log(pool.liquidity.toString());
+```
+
+### 4. Get a position
+
+```ts
+const position = await ethInstance.getPosition({
+  tokenId: "123"
+});
+console.log({
+  token0: position.token0.symbol,
+  token1: position.token1.symbol,
+  liquidity: position.position.liquidity.toString()
+});
+```
+
+## Advanced Usage
+
+### Error Handling
+
+All SDK functions include comprehensive error handling:
+
+```ts
+try {
+  const quote = await ethInstance.getQuote({
+    tokens: [token0, token1],
+    feeTier: 3000,
+    amountIn: parseEther("1"),
+    zeroForOne: true
+  });
+} catch (error) {
+  // Handle specific error types
+  if (error.message.includes("insufficient liquidity")) {
+    // Handle liquidity error
+  } else if (error.message.includes("invalid pool")) {
+    // Handle pool error
+  }
+}
+```
+
+### Using with React
+
+You can use the SDK with React Query for data fetching:
 
 ```tsx
-import { useGetQuote } from "uniswap-dev-kit";
-import { parseEther } from "viem";
+import { useQuery } from '@tanstack/react-query';
+import { UniDevKitV4 } from 'uniswap-dev-kit';
 
-function QuoteComponent() {
-  const { data, isLoading, error } = useGetQuote({
-    params: {
+// Create instance once
+const sdk = new UniDevKitV4({
+  chainId: 1,
+  rpcUrl: "https://eth.llamarpc.com",
+  contracts: {
+    // ... contract addresses
+  }
+});
+
+// Simple hook for quotes
+function useQuote() {
+  return useQuery({
+    queryKey: ['quote'],
+    queryFn: () => sdk.getQuote({
       tokens: [
         "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
       ],
       feeTier: 3000,
-      tickSpacing: 60,
       amountIn: parseEther("1"),
       zeroForOne: true
-    },
-    chainId: 1
+    })
   });
-
-  if (isLoading) return <span>Loading...</span>;
-  if (error) return <span>Error: {error.message}</span>;
-  return <span>Quote: {data?.amountOut?.toString()}</span>;
-}
-```
-
-#### Get a pool
-
-```tsx
-import { useGetPool } from "uniswap-dev-kit";
-
-function PoolComponent() {
-  const { data, isLoading, error } = useGetPool({
-    params: {
-      tokens: [
-        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-        "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
-      ],
-      fee: 3000,
-    },
-    chainId: 1
-  });
-
-  if (isLoading) return <span>Loading...</span>;
-  if (error) return <span>Error: {error.message}</span>;
-  return <span>Pool: {JSON.stringify(data)}</span>;
 }
 ```
 
@@ -173,10 +188,8 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
 
 ## FAQ
 
-- **Which React versions are supported?**  
-  React 18+ (see peerDependencies)
 - **Does it work in Node and browser?**  
-  Yes, but hooks are React-only.
+  Yes, works in both environments.
 - **Can I use my own ABIs?**  
   Yes, but Uniswap V4 ABIs are included.
 

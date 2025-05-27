@@ -1,4 +1,4 @@
-import type { Address, PublicClient } from "viem";
+import type { Address, Chain, PublicClient } from "viem";
 
 /**
  * Configuration for V4 contracts.
@@ -41,8 +41,8 @@ export type UniDevKitV4Config = {
 export type UniDevKitV4Instance = {
 	/** Viem public client */
 	client: PublicClient;
-	/** Chain ID */
-	chainId: number;
+	/** Chain */
+	chain: Chain;
 	/** Contract addresses */
 	contracts: V4Contracts;
 };

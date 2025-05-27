@@ -1,8 +1,8 @@
 import { V4PositionManagerAbi } from "@/constants/abis/V4PositionMananger";
 import { V4StateViewAbi } from "@/constants/abis/V4StateView";
-import { getInstance } from "@/core/uniDevKitV4Factory";
 import { getTickSpacingForFee } from "@/helpers/fees";
 import { sortTokens } from "@/helpers/tokens";
+import type { UniDevKitV4Instance } from "@/types/core";
 import { FeeTier, type PoolParams } from "@/types/utils/getPool";
 import { getTokens } from "@/utils/getTokens";
 import { Pool } from "@uniswap/v4-sdk";
@@ -13,19 +13,16 @@ const DEFAULT_HOOKS = zeroAddress;
 /**
  * Retrieves a Uniswap V4 pool instance for a given token pair, fee tier, tick spacing, and hooks configuration.
  * @param params Pool parameters including tokens, fee tier, tick spacing, and hooks configuration
- * @param chainId The chain ID where the pool exists (optional)
- * @returns Promise resolving to pool data, loading state, and any errors
+ * @param instance UniDevKitV4Instance
+ * @returns Promise resolving to pool data
  * @throws Error if SDK instance or token instances are not found or if pool data is not found
  */
 export async function getPool(
 	params: PoolParams,
-	chainId?: number,
-): Promise<Pool | undefined> {
-	const sdk = getInstance(chainId);
-	if (!sdk) {
-		throw new Error("SDK not found. Please create an instance first.");
-	}
-	const client = sdk.getClient();
+	instance: UniDevKitV4Instance,
+): Promise<Pool> {
+	const { client, contracts } = instance;
+	const { positionManager, stateView } = contracts;
 
 	const {
 		tokens,
@@ -38,16 +35,12 @@ export async function getPool(
 	const finalTickSpacing = tickSpacing ?? getTickSpacingForFee(fee);
 
 	const [token0, token1] = sortTokens(tokens[0], tokens[1]);
-	const tokenInstances = await getTokens({
-		addresses: [token0, token1],
-		chainId,
-	});
-
-	console.log("tokenInstances", tokenInstances);
-
-	if (!tokenInstances) {
-		throw new Error("Failed to fetch token instances");
-	}
+	const tokenInstances = await getTokens(
+		{
+			addresses: [token0, token1],
+		},
+		instance,
+	);
 
 	const poolId32Bytes = Pool.getPoolId(
 		tokenInstances[0],
@@ -57,27 +50,25 @@ export async function getPool(
 		hooks,
 	) as `0x${string}`;
 
-	console.log("poolId32Bytes", poolId32Bytes);
-
 	const poolId25Bytes = slice(poolId32Bytes, 0, 25) as `0x${string}`;
 
 	const poolData = await client.multicall({
 		allowFailure: false,
 		contracts: [
 			{
-				address: sdk.getContractAddress("positionManager"),
+				address: positionManager,
 				abi: V4PositionManagerAbi,
 				functionName: "poolKeys",
 				args: [poolId25Bytes],
 			},
 			{
-				address: sdk.getContractAddress("stateView"),
+				address: stateView,
 				abi: V4StateViewAbi,
 				functionName: "getSlot0",
 				args: [poolId32Bytes],
 			},
 			{
-				address: sdk.getContractAddress("stateView"),
+				address: stateView,
 				abi: V4StateViewAbi,
 				functionName: "getLiquidity",
 				args: [poolId32Bytes],
@@ -86,7 +77,7 @@ export async function getPool(
 	});
 
 	if (!poolData) {
-		return undefined;
+		throw new Error("Failed to fetch pool data");
 	}
 
 	const [poolKeysData, slot0Data, liquidityData] = poolData;
@@ -94,7 +85,7 @@ export async function getPool(
 		poolKeysData && Number(poolKeysData[3]) > 0 && slot0Data && liquidityData;
 
 	if (!poolExists) {
-		return undefined;
+		throw new Error("Pool does not exist");
 	}
 
 	try {
@@ -111,7 +102,8 @@ export async function getPool(
 
 		return pool;
 	} catch (error) {
-		console.error("Error fetching pool:", error);
-		return undefined;
+		throw new Error(
+			`Error creating pool instance: ${(error as Error).message}`,
+		);
 	}
 }
