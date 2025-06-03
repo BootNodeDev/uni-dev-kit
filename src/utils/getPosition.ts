@@ -1,5 +1,5 @@
-import { V4PositionManagerAbi } from "@/constants/abis/V4PositionMananger";
-import { V4StateViewAbi } from "@/constants/abis/V4StateView";
+import V4PositionManagerAbi from "@/constants/abis/V4PositionMananger";
+import V4StateViewAbi from "@/constants/abis/V4StateView";
 import { decodePositionInfo } from "@/helpers/positions";
 import type { UniDevKitV4Instance } from "@/types/core";
 import type {

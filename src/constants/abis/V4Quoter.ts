@@ -1,4 +1,4 @@
-export const V4QuoterAbi = [
+export default [
 	{
 		inputs: [
 			{

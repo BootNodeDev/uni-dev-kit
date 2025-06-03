@@ -1,4 +1,5 @@
 import { getChainById } from "@/constants/chains";
+import type { BuildSwapCallDataParams } from "@/types";
 import type { UniDevKitV4Config, UniDevKitV4Instance } from "@/types/core";
 import type { PoolParams } from "@/types/utils/getPool";
 import type { GetPoolKeyFromPoolIdParams } from "@/types/utils/getPoolKeyFromPoolId";
@@ -8,6 +9,7 @@ import type {
 } from "@/types/utils/getPosition";
 import type { QuoteParams, QuoteResponse } from "@/types/utils/getQuote";
 import type { GetTokensParams } from "@/types/utils/getTokens";
+import { buildSwapCallData } from "@/utils/buildSwapCallData";
 import { getPool } from "@/utils/getPool";
 import { getPoolKeyFromPoolId } from "@/utils/getPoolKeyFromPoolId";
 import { getPosition } from "@/utils/getPosition";
@@ -15,12 +17,8 @@ import { getQuote } from "@/utils/getQuote";
 import { getTokens } from "@/utils/getTokens";
 import type { Token } from "@uniswap/sdk-core";
 import type { Pool, PoolKey } from "@uniswap/v4-sdk";
-import {
-	http,
-	type Address,
-	type PublicClient,
-	createPublicClient,
-} from "viem";
+import type { Abi, Address, Hex, PublicClient } from "viem";
+import { http, createPublicClient } from "viem";
 
 /**
  * Main class for interacting with Uniswap V4 contracts.
@@ -88,6 +86,62 @@ export class UniDevKitV4 {
 	}
 
 	/**
+	 * Loads the ABI for a specific contract using dynamic imports.
+	 * This method is used internally to lazy load ABIs only when needed.
+	 * @param name - The name of the contract to load the ABI for
+	 * @returns Promise resolving to the contract's ABI
+	 * @throws Will throw an error if the contract ABI is not found
+	 * @private
+	 */
+	private async loadAbi(
+		name: keyof UniDevKitV4Config["contracts"],
+	): Promise<Abi> {
+		const abiMap: Record<
+			keyof UniDevKitV4Config["contracts"],
+			() => Promise<Abi> | null
+		> = {
+			permit2: () => import("@/constants/abis/Permit2").then((m) => m.default),
+			poolManager: () =>
+				import("@/constants/abis/V4PoolManager").then((m) => m.default),
+			positionManager: () =>
+				import("@/constants/abis/V4PositionMananger").then((m) => m.default),
+			positionDescriptor: () => null, // TODO: add position descriptor abi
+			quoter: () => import("@/constants/abis/V4Quoter").then((m) => m.default),
+			stateView: () =>
+				import("@/constants/abis/V4StateView").then((m) => m.default),
+			universalRouter: () =>
+				import("@/constants/abis/V4UniversalRouter").then((m) => m.default),
+		};
+
+		const loader = abiMap[name];
+		if (!loader) {
+			throw new Error(`Contract abi for ${name} not found.`);
+		}
+		const abi = await loader();
+		if (abi === null) {
+			throw new Error(`Contract abi for ${name} not found.`);
+		}
+		return abi;
+	}
+
+	/**
+	 * Retrieves the ABI for a specific contract.
+	 * This method uses dynamic imports to load ABIs on demand, reducing the initial bundle size.
+	 * @param name - The name of the contract (e.g., "poolManager", "quoter")
+	 * @returns Promise resolving to the contract's ABI
+	 * @throws Will throw an error if the contract ABI is not found
+	 * @example
+	 * ```typescript
+	 * const poolManagerAbi = await uniDevKit.getContractAbi('poolManager');
+	 * ```
+	 */
+	async getContractAbi(
+		name: keyof UniDevKitV4Config["contracts"],
+	): Promise<Abi> {
+		return this.loadAbi(name);
+	}
+
+	/**
 	 * Retrieves a Uniswap V4 pool instance for a given token pair.
 	 * @param params Pool parameters including tokens, fee tier, tick spacing, and hooks configuration
 	 * @returns Promise resolving to pool data
@@ -131,5 +185,9 @@ export class UniDevKitV4 {
 		params: GetPoolKeyFromPoolIdParams,
 	): Promise<PoolKey> {
 		return getPoolKeyFromPoolId(params, this.instance);
+	}
+
+	async buildSwapCallData(params: BuildSwapCallDataParams): Promise<Hex> {
+		return buildSwapCallData(params, this.instance);
 	}
 }
