@@ -20,8 +20,8 @@ export type BuildSwapCallDataParams = {
 	tokenIn: Address;
 	/** Amount of input tokens to swap (in token's smallest unit) */
 	amountIn: bigint;
-	/** Minimum amount of output tokens to receive (in token's smallest unit) */
-	amountOutMin?: bigint;
 	/** Pool */
 	pool: Pool;
+	/** Slippage tolerance in basis points (e.g., 50 = 0.5%). Defaults to 50 (0.5%) */
+	slippageTolerance?: number;
 };

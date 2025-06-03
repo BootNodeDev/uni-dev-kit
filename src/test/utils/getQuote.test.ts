@@ -1,8 +1,19 @@
 import { createMockSdkInstance } from "@/test/helpers/sdkInstance";
 import { getQuote } from "@/utils/getQuote";
+import type { Pool } from "@uniswap/v4-sdk";
 import type { Abi } from "viem";
 import type { SimulateContractReturnType } from "viem/actions";
 import { describe, expect, it, vi } from "vitest";
+
+const mockPool: Pool = {
+	poolKey: {
+		currency0: "0x123",
+		currency1: "0x456",
+		fee: 3000,
+		tickSpacing: 10,
+		hooks: "0x",
+	},
+} as Pool;
 
 describe("getQuote", () => {
 	it("should throw error if SDK instance not found", async () => {
@@ -14,10 +25,9 @@ describe("getQuote", () => {
 		await expect(
 			getQuote(
 				{
-					tokens: ["0x123", "0x456"],
-					zeroForOne: true,
+					pool: mockPool,
 					amountIn: BigInt(1000000),
-					feeTier: 3000,
+					zeroForOne: true,
 				},
 				mockDeps,
 			),
@@ -32,10 +42,9 @@ describe("getQuote", () => {
 
 		const result = await getQuote(
 			{
-				tokens: ["0x123", "0x456"],
-				zeroForOne: true,
+				pool: mockPool,
 				amountIn: BigInt(1000000),
-				feeTier: 3000,
+				zeroForOne: true,
 			},
 			mockDeps,
 		);
