@@ -1,8 +1,19 @@
+import { createMockSdkInstance } from "@/test/helpers/sdkInstance";
 import { buildSwapCallData } from "@/utils/buildSwapCallData";
+import * as getQuoteModule from "@/utils/getQuote";
 import { Token } from "@uniswap/sdk-core";
 import { Pool } from "@uniswap/v4-sdk";
 import { type Address, zeroAddress } from "viem";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+const sdkInstance = createMockSdkInstance();
+
+// Mock getQuote to return a fixed amount
+vi.spyOn(getQuoteModule, "getQuote").mockImplementation(async () => ({
+	amountOut: BigInt(1000000000000000000), // 1 WETH
+	estimatedGasUsed: BigInt(100000),
+	timestamp: Date.now(),
+}));
 
 describe("buildSwapCallData", () => {
 	// USDC and WETH on Mainnet
@@ -31,11 +42,11 @@ describe("buildSwapCallData", () => {
 		const params = {
 			tokenIn: mockTokens[0],
 			amountIn: BigInt(1000000), // 1 USDC
-			amountOutMin: BigInt(0),
+			slippageTolerance: 50,
 			pool: mockPool,
 		};
 
-		const calldata = await buildSwapCallData(params);
+		const calldata = await buildSwapCallData(params, sdkInstance);
 		expect(calldata).toBeDefined();
 		expect(calldata).toMatch(/^0x/); // Should be a hex string
 	});
@@ -44,11 +55,11 @@ describe("buildSwapCallData", () => {
 		const params = {
 			tokenIn: mockTokens[1],
 			amountIn: BigInt(1000000000000000000), // 1 WETH
-			amountOutMin: BigInt(0),
+			slippageTolerance: 50,
 			pool: mockPool,
 		};
 
-		const calldata = await buildSwapCallData(params);
+		const calldata = await buildSwapCallData(params, sdkInstance);
 		expect(calldata).toBeDefined();
 		expect(calldata).toMatch(/^0x/);
 	});
@@ -57,11 +68,11 @@ describe("buildSwapCallData", () => {
 		const params = {
 			tokenIn: mockTokens[0],
 			amountIn: BigInt(1000000),
-			amountOutMin: BigInt(500000), // 0.5 WETH minimum
+			slippageTolerance: 50,
 			pool: mockPool,
 		};
 
-		const calldata = await buildSwapCallData(params);
+		const calldata = await buildSwapCallData(params, sdkInstance);
 		expect(calldata).toBeDefined();
 		expect(calldata).toMatch(/^0x/);
 	});
@@ -70,11 +81,11 @@ describe("buildSwapCallData", () => {
 		const params = {
 			tokenIn: mockTokens[0],
 			amountIn: BigInt(1000000),
-			amountOutMin: BigInt(0),
+			slippageTolerance: 50,
 			pool: mockPool,
 		};
 
-		const calldata = await buildSwapCallData(params);
+		const calldata = await buildSwapCallData(params, sdkInstance);
 		expect(calldata).toBeDefined();
 		expect(calldata).toMatch(/^0x/);
 	});
@@ -83,11 +94,11 @@ describe("buildSwapCallData", () => {
 		const params = {
 			tokenIn: mockTokens[0],
 			amountIn: BigInt(1000000),
-			amountOutMin: BigInt(0),
+			slippageTolerance: 50,
 			pool: mockPool,
 		};
 
-		const calldata = await buildSwapCallData(params);
+		const calldata = await buildSwapCallData(params, sdkInstance);
 		expect(calldata).toBeDefined();
 		expect(calldata).toMatch(/^0x/);
 	});

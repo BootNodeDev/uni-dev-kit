@@ -1,24 +1,14 @@
-import type { FeeTier } from "@/types/utils/getPool";
-import type { Address, Hex } from "viem";
+import type { Pool } from "@uniswap/v4-sdk";
+import type { Hex } from "viem";
 
 /**
  * Parameters required for fetching a quote using the V4 Quoter contract.
  */
 export interface QuoteParams {
 	/**
-	 * Array of two token addresses representing the pair. The order will be handled internally.
+	 * The pool instance to quote from
 	 */
-	tokens: [Address, Address];
-
-	/**
-	 * The fee tier of the pool (e.g., FeeTier.MEDIUM).
-	 */
-	feeTier: FeeTier;
-
-	/**
-	 * The tick spacing for the pool. If not provided, it will be derived from the fee tier.
-	 */
-	tickSpacing?: number;
+	pool: Pool;
 
 	/**
 	 * The amount of tokens being swapped, expressed as a bigint.
@@ -29,11 +19,6 @@ export interface QuoteParams {
 	 * Direction of the swap. True if swapping from the lower token to the higher token, false otherwise.
 	 */
 	zeroForOne: boolean;
-
-	/**
-	 * Address of the hooks contract, if any. Defaults to zero address if not provided.
-	 */
-	hooks?: Address;
 
 	/**
 	 * Optional additional data for the hooks, if any.

@@ -188,6 +188,6 @@ export class UniDevKitV4 {
 	}
 
 	async buildSwapCallData(params: BuildSwapCallDataParams): Promise<Hex> {
-		return buildSwapCallData(params);
+		return buildSwapCallData(params, this.instance);
 	}
 }

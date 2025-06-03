@@ -1,5 +1,8 @@
+import { calculateMinimumOutput } from "@/helpers/swap";
 import type { BuildSwapCallDataParams } from "@/types";
 import { COMMANDS } from "@/types";
+import type { UniDevKitV4Instance } from "@/types/core";
+import { getQuote } from "@/utils/getQuote";
 import { ethers } from "ethers";
 import type { Hex } from "viem";
 
@@ -21,8 +24,8 @@ import type { Hex } from "viem";
  * const swapParams = {
  *   tokenIn: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
  *   amountIn: parseUnits("100", 6), // 100 USDC
- *   amountOutMin: parseUnits("0.05", 18), // Min 0.05 WETH
  *   pool: pool,
+ *   slippageTolerance: 50, // 0.5%
  * };
  *
  * const calldata = await buildSwapCallData(swapParams);
@@ -37,12 +40,29 @@ import type { Hex } from "viem";
  */
 export async function buildSwapCallData(
 	params: BuildSwapCallDataParams,
+	instance: UniDevKitV4Instance,
 ): Promise<Hex> {
 	// Extract and set default parameters
-	const { tokenIn, amountIn, amountOutMin = 0n, pool } = params;
+	const { tokenIn, amountIn, pool, slippageTolerance = 50 } = params;
 
 	const zeroForOne =
 		tokenIn.toLowerCase() === pool.poolKey.currency0.toLowerCase();
+
+	// Get quote and calculate minimum output amount
+	const quote = await getQuote(
+		{
+			pool,
+			amountIn,
+			zeroForOne,
+		},
+		instance,
+	);
+
+	// Calculate minimum output amount based on slippage
+	const amountOutMin = calculateMinimumOutput(
+		quote.amountOut,
+		slippageTolerance,
+	);
 
 	// Encode Universal Router commands
 	const commands = ethers.utils.solidityPack(
@@ -66,7 +86,7 @@ export async function buildSwapCallData(
 				poolKey: pool.poolKey,
 				zeroForOne,
 				amountIn: ethers.BigNumber.from(amountIn.toString()),
-				amountOutMinimum: ethers.BigNumber.from(amountOutMin.toString()),
+				amountOutMinimum: amountOutMin,
 				hookData: "0x",
 			},
 		],
