@@ -1,12 +1,5 @@
 import type { BuildSwapCallDataParams } from "@/types";
-import {
-	COMMANDS,
-	FeeTier,
-	TICK_SPACING_BY_FEE,
-	type UniDevKitV4Instance,
-} from "@/types";
-import { DEFAULT_HOOKS, getPool } from "@/utils/getPool";
-import { getTokens } from "@/utils/getTokens";
+import { COMMANDS } from "@/types";
 import { ethers } from "ethers";
 import type { Hex } from "viem";
 
@@ -27,16 +20,16 @@ import type { Hex } from "viem";
  * ```typescript
  * const swapParams = {
  *   tokenIn: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
- *   tokenOut: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", // WETH
  *   amountIn: parseUnits("100", 6), // 100 USDC
  *   amountOutMin: parseUnits("0.05", 18), // Min 0.05 WETH
+ *   pool: pool,
  * };
  *
- * const calldata = await buildSwapCallData(swapParams, instance);
+ * const calldata = await buildSwapCallData(swapParams);
  *
  * // Send transaction
  * const tx = await sendTransaction({
- *   to: instance.contracts.universalRouter,
+ *   to: universalRouterAddress,
  *   data: calldata,
  *   value: 0,
  * });
@@ -44,34 +37,12 @@ import type { Hex } from "viem";
  */
 export async function buildSwapCallData(
 	params: BuildSwapCallDataParams,
-	instance: UniDevKitV4Instance,
 ): Promise<Hex> {
 	// Extract and set default parameters
-	const {
-		tokenIn,
-		tokenOut,
-		amountIn,
-		amountOutMin = 0n,
-		fee = FeeTier.MEDIUM,
-		tickSpacing = TICK_SPACING_BY_FEE[fee],
-		hooks = DEFAULT_HOOKS,
-	} = params;
+	const { tokenIn, amountIn, amountOutMin = 0n, pool } = params;
 
-	// Get pool information
-	const pool = await getPool(
-		{ tokens: [tokenIn, tokenOut], fee, tickSpacing, hooks },
-		instance,
-	);
-	if (!pool) {
-		throw new Error("No swapable pool found");
-	}
-
-	// Get token instances for address comparison
-	const tokenInstances = await getTokens(
-		{ addresses: [tokenIn, tokenOut] },
-		instance,
-	);
-	const zeroForOne = tokenInstances[0].address === tokenIn;
+	const zeroForOne =
+		tokenIn.toLowerCase() === pool.poolKey.currency0.toLowerCase();
 
 	// Encode Universal Router commands
 	const commands = ethers.utils.solidityPack(
@@ -94,8 +65,8 @@ export async function buildSwapCallData(
 			{
 				poolKey: pool.poolKey,
 				zeroForOne,
-				amountIn: ethers.BigNumber.from(amountIn),
-				amountOutMinimum: ethers.BigNumber.from(amountOutMin),
+				amountIn: ethers.BigNumber.from(amountIn.toString()),
+				amountOutMinimum: ethers.BigNumber.from(amountOutMin.toString()),
 				hookData: "0x",
 			},
 		],
@@ -106,11 +77,13 @@ export async function buildSwapCallData(
 		exactInputSingleParams,
 		ethers.utils.defaultAbiCoder.encode(
 			["address", "uint128"],
-			[pool.poolKey.currency0, amountIn],
+			zeroForOne
+				? [pool.poolKey.currency0, amountIn]
+				: [pool.poolKey.currency1, amountIn],
 		),
 		ethers.utils.defaultAbiCoder.encode(
 			["address", "uint128"],
-			[pool.poolKey.currency1, 0],
+			zeroForOne ? [pool.poolKey.currency1, 0] : [pool.poolKey.currency0, 0],
 		),
 	];
 

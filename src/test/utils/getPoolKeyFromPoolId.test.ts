@@ -37,7 +37,7 @@ describe("getPoolKeyFromPoolId", () => {
 		});
 		expect(mockDeps.client.readContract).toHaveBeenCalledWith({
 			address: mockDeps.contracts.positionManager,
-			abi: undefined,
+			abi: expect.any(Object),
 			functionName: "poolKeys",
 			args: ["0x123"],
 		});

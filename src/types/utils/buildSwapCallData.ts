@@ -1,4 +1,4 @@
-import type { FeeTier } from "@/types";
+import type { Pool } from "@uniswap/v4-sdk";
 import type { Address } from "viem";
 
 /**
@@ -18,16 +18,10 @@ export const COMMANDS = {
 export type BuildSwapCallDataParams = {
 	/** Input token address */
 	tokenIn: Address;
-	/** Output token address */
-	tokenOut: Address;
 	/** Amount of input tokens to swap (in token's smallest unit) */
 	amountIn: bigint;
 	/** Minimum amount of output tokens to receive (in token's smallest unit) */
 	amountOutMin?: bigint;
-	/** Pool fee tier (e.g., 3000 for 0.3%) */
-	fee?: FeeTier;
-	/** Pool tick spacing */
-	tickSpacing?: number;
-	/** Hook contract address (use zero address if no hooks) */
-	hooks?: Address;
+	/** Pool */
+	pool: Pool;
 };

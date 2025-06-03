@@ -9,15 +9,6 @@ import type {
 } from "@/types/utils/getPosition";
 import type { QuoteParams, QuoteResponse } from "@/types/utils/getQuote";
 import type { GetTokensParams } from "@/types/utils/getTokens";
-import type {
-	Permit2CallData,
-	PermitParams,
-	PermitTransferFromTypedData,
-} from "@/utils/buildPermit2TypedData";
-import {
-	buildPermit2DataFromSignature,
-	buildPermit2TypedData,
-} from "@/utils/buildPermit2TypedData";
 import { buildSwapCallData } from "@/utils/buildSwapCallData";
 import { getPool } from "@/utils/getPool";
 import { getPoolKeyFromPoolId } from "@/utils/getPoolKeyFromPoolId";
@@ -196,21 +187,7 @@ export class UniDevKitV4 {
 		return getPoolKeyFromPoolId(params, this.instance);
 	}
 
-	async buildPermit2TypedData(
-		params: PermitParams,
-	): Promise<PermitTransferFromTypedData> {
-		return buildPermit2TypedData(params, this.instance);
-	}
-
-	buildPermit2DataFromSignature(
-		typedData: PermitTransferFromTypedData,
-		signature: Hex,
-		owner: Address,
-	): Permit2CallData {
-		return buildPermit2DataFromSignature(typedData, signature, owner);
-	}
-
 	async buildSwapCallData(params: BuildSwapCallDataParams): Promise<Hex> {
-		return buildSwapCallData(params, this.instance);
+		return buildSwapCallData(params);
 	}
 }

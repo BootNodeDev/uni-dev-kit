@@ -8,7 +8,7 @@ import { getTokens } from "@/utils/getTokens";
 import { Pool } from "@uniswap/v4-sdk";
 import { slice, zeroAddress } from "viem";
 
-const DEFAULT_HOOKS = zeroAddress;
+export const DEFAULT_HOOKS = zeroAddress;
 
 /**
  * Retrieves a Uniswap V4 pool instance for a given token pair, fee tier, tick spacing, and hooks configuration.

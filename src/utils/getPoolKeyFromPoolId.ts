@@ -1,9 +1,7 @@
-import { V4PositionManagerAbi } from "@/constants/abis/V4PositionMananger";
+import V4PositionManagerAbi from "@/constants/abis/V4PositionMananger";
 import type { UniDevKitV4Instance } from "@/types/core";
-import type {
-	GetPoolKeyFromPoolIdParams,
-	PoolKey,
-} from "@/types/utils/getPoolKeyFromPoolId";
+import type { GetPoolKeyFromPoolIdParams } from "@/types/utils/getPoolKeyFromPoolId";
+import type { PoolKey } from "@uniswap/v4-sdk";
 
 /**
  * Retrieves the pool key information for a given pool ID.
