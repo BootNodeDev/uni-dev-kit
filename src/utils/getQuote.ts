@@ -1,4 +1,4 @@
-import { V4QuoterAbi } from "@/constants/abis/V4Quoter";
+import V4QuoterAbi from "@/constants/abis/V4Quoter";
 import { sortTokens } from "@/helpers/tokens";
 import type { UniDevKitV4Instance } from "@/types/core";
 import { FeeTier, TICK_SPACING_BY_FEE } from "@/types/utils/getPool";

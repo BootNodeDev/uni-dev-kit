@@ -1,5 +1,5 @@
-import { V4PositionManagerAbi } from "@/constants/abis/V4PositionMananger";
-import { V4StateViewAbi } from "@/constants/abis/V4StateView";
+import V4PositionManagerAbi from "@/constants/abis/V4PositionMananger";
+import V4StateViewAbi from "@/constants/abis/V4StateView";
 import { getTickSpacingForFee } from "@/helpers/fees";
 import { sortTokens } from "@/helpers/tokens";
 import type { UniDevKitV4Instance } from "@/types/core";

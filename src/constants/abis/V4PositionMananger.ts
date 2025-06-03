@@ -1,4 +1,4 @@
-export const V4PositionManagerAbi = [
+export default [
 	{
 		inputs: [
 			{
