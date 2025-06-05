@@ -1,4 +1,4 @@
-import type { Token } from "@uniswap/sdk-core";
+import type { Currency } from "@uniswap/sdk-core";
 import type { Pool, Position } from "@uniswap/v4-sdk";
 
 /**
@@ -18,9 +18,9 @@ export interface GetPositionResponse {
 	/** The pool instance associated with the position */
 	pool: Pool;
 	/** The first token in the pool pair */
-	token0: Token;
+	token0: Currency;
 	/** The second token in the pool pair */
-	token1: Token;
+	token1: Currency;
 	/** The unique identifier of the pool */
 	poolId: `0x${string}`;
 	/** The unique identifier of the position */

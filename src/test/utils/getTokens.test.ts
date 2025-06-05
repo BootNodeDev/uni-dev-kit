@@ -1,13 +1,8 @@
 import { createMockSdkInstance } from "@/test/helpers/sdkInstance";
 import { getTokens } from "@/utils/getTokens";
-import { Token } from "@uniswap/sdk-core";
+import { Ether, Token } from "@uniswap/sdk-core";
 import { type Address, zeroAddress } from "viem";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-
-// Mock the SDK instance
-vi.mock("@/core/uniDevKitV4Factory", () => ({
-	getInstance: vi.fn(),
-}));
 
 vi.mock("@/constants/chains", () => ({
 	getChainById: () => ({
@@ -66,8 +61,7 @@ describe("getTokens", () => {
 
 		expect(result).toHaveLength(2);
 		expect(result[0]).toBeInstanceOf(Token);
-		expect(result[1]).toBeInstanceOf(Token);
-		expect(result[1].address).toBe(zeroAddress);
+		expect(result[1]).toBeInstanceOf(Ether);
 	});
 
 	it("should return token instances for valid addresses", async () => {

@@ -17,8 +17,6 @@ export type V4Contracts = {
 	stateView: Address;
 	/** Address of the universal router contract */
 	universalRouter: Address;
-	/** Address of the permit2 contract */
-	permit2: Address;
 };
 
 /**
