@@ -1,6 +1,6 @@
 import type { UniDevKitV4Instance } from "@/types/core";
 import type { GetTokensParams } from "@/types/utils/getTokens";
-import { Token } from "@uniswap/sdk-core";
+import { type Currency, Ether, Token } from "@uniswap/sdk-core";
 import { erc20Abi, zeroAddress } from "viem";
 
 /**
@@ -13,7 +13,7 @@ import { erc20Abi, zeroAddress } from "viem";
 export async function getTokens(
 	params: GetTokensParams,
 	instance: UniDevKitV4Instance,
-): Promise<Token[]> {
+): Promise<Currency[]> {
 	const { addresses } = params;
 	const { client, chain } = instance;
 
@@ -31,22 +31,12 @@ export async function getTokens(
 			allowFailure: false,
 		});
 
-		const tokens: Token[] = [];
+		const tokens: Currency[] = [];
 		let resultIndex = 0;
 
 		for (const address of addresses) {
 			if (address === zeroAddress) {
-				// For native currency, use chain data from wagmi
-				const nativeCurrency = chain.nativeCurrency;
-				tokens.push(
-					new Token(
-						chain.id,
-						address,
-						nativeCurrency.decimals,
-						nativeCurrency.symbol,
-						nativeCurrency.name,
-					),
-				);
+				tokens.push(Ether.onChain(chain.id));
 			} else {
 				// For ERC20 tokens, use multicall results
 				const symbol = results[resultIndex++] as string;

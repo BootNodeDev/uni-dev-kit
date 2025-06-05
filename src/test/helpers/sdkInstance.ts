@@ -24,7 +24,6 @@ export const createMockSdkInstance = (
 			quoter: "0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6",
 			stateView: "0x4eD4C8B7eF27d4d242c4D1267E1B1E39c14b9E73",
 			universalRouter: "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD",
-			permit2: "0x000000000022D473030F116dDEE9F6B43aC78BA3",
 		},
 		...overrides,
 	};
