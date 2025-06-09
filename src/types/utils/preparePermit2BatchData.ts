@@ -1,6 +1,6 @@
 import type { PermitBatch } from "@uniswap/permit2-sdk";
 import type { BatchPermitOptions } from "@uniswap/v4-sdk";
-import type { TypedDataDomain, TypedDataField } from "ethers";
+import type { TypedDataField } from "ethers";
 import type { Address, Hex } from "viem";
 
 /**
@@ -32,10 +32,19 @@ export interface PreparePermit2BatchDataResult {
 	/** Data needed to sign the permit2 batch data */
 	toSign: {
 		/** Domain of the permit2 batch data */
-		domain: TypedDataDomain;
+		domain: {
+			name: string;
+			version: string;
+			chainId: number;
+			verifyingContract: `0x${string}`;
+		};
 		/** Types of the permit2 batch data */
 		types: Record<string, TypedDataField[]>;
 		/** Values of the permit2 batch data */
 		values: PermitBatch;
+		/** Primary type of the permit2 batch data */
+		primaryType: "PermitBatch";
+		/** Message of the permit2 batch data */
+		message: Record<string, unknown>;
 	};
 }
