@@ -2,7 +2,7 @@ import type { UniDevKitV4Instance } from "@/types";
 import type {
 	PreparePermit2BatchDataParams,
 	PreparePermit2BatchDataResult,
-} from "@/types/utils/preparePermit2BatchData";
+} from "@/types/utils/permit2";
 import {
 	AllowanceTransfer,
 	MaxUint160,
