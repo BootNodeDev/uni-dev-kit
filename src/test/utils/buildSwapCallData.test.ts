@@ -44,6 +44,7 @@ describe("buildSwapCallData", () => {
 			amountIn: BigInt(1000000), // 1 USDC
 			slippageTolerance: 50,
 			pool: mockPool,
+			recipient: zeroAddress,
 		};
 
 		const calldata = await buildSwapCallData(params, sdkInstance);
@@ -57,6 +58,7 @@ describe("buildSwapCallData", () => {
 			amountIn: BigInt(1000000000000000000), // 1 WETH
 			slippageTolerance: 50,
 			pool: mockPool,
+			recipient: zeroAddress,
 		};
 
 		const calldata = await buildSwapCallData(params, sdkInstance);
@@ -70,6 +72,7 @@ describe("buildSwapCallData", () => {
 			amountIn: BigInt(1000000),
 			slippageTolerance: 50,
 			pool: mockPool,
+			recipient: zeroAddress,
 		};
 
 		const calldata = await buildSwapCallData(params, sdkInstance);
@@ -83,6 +86,7 @@ describe("buildSwapCallData", () => {
 			amountIn: BigInt(1000000),
 			slippageTolerance: 50,
 			pool: mockPool,
+			recipient: zeroAddress,
 		};
 
 		const calldata = await buildSwapCallData(params, sdkInstance);
@@ -96,6 +100,7 @@ describe("buildSwapCallData", () => {
 			amountIn: BigInt(1000000),
 			slippageTolerance: 50,
 			pool: mockPool,
+			recipient: zeroAddress,
 		};
 
 		const calldata = await buildSwapCallData(params, sdkInstance);

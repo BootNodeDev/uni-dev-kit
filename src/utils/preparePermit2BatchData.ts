@@ -2,7 +2,7 @@ import type { UniDevKitV4Instance } from "@/types";
 import type {
 	PreparePermit2BatchDataParams,
 	PreparePermit2BatchDataResult,
-} from "@/types/utils/preparePermit2BatchData";
+} from "@/types/utils/permit2";
 import {
 	AllowanceTransfer,
 	MaxUint160,
@@ -10,16 +10,14 @@ import {
 	type PermitBatch,
 } from "@uniswap/permit2-sdk";
 import type { BatchPermitOptions } from "@uniswap/v4-sdk";
-import type { TypedDataDomain, TypedDataField } from "ethers";
-import { zeroAddress } from "viem";
-import type { Hex } from "viem/_types/types/misc";
-
-/**
+import type { TypedDataField } from "ethers";
+import type { Hex } from "viem";
+import { zeroAddress } from "viem"; /**
  * Prepares the permit2 batch data for multiple tokens
  *
  * This function creates a batch permit that allows a spender to use multiple tokens
  * on behalf of the user. It fetches current allowance details for each token and
- * prepares the data needed for signing.
+ * prepares the data needed for signing. You can use with viem or ethers.
  *
  * The complete flow to use this function is:
  * 1. Prepare the permit data:
@@ -33,10 +31,14 @@ import type { Hex } from "viem/_types/types/misc";
  *
  * 2. Sign the permit data using your signer:
  * ```typescript
+ * // viem
+ * const signature = await signer._signTypedData(permitData.toSign)
+ *
+ * // ethers
  * const signature = await signer.signTypedData(
  *   permitData.toSign.domain,
  *   permitData.toSign.types,
- *   permitData.toSign.values
+ *   permitData.toSign.values,
  * )
  * ```
  *
@@ -135,7 +137,7 @@ export async function preparePermit2BatchData(
 		PERMIT2_ADDRESS,
 		chainId,
 	) as {
-		domain: TypedDataDomain;
+		domain: PreparePermit2BatchDataResult["toSign"]["domain"];
 		types: Record<string, TypedDataField[]>;
 		values: PermitBatch;
 	};
@@ -158,6 +160,8 @@ export async function preparePermit2BatchData(
 			domain,
 			types,
 			values,
+			primaryType: "PermitBatch",
+			message: values as unknown as Record<string, unknown>,
 		},
 	};
 }

@@ -16,7 +16,9 @@ import type { GetTokensParams } from "@/types/utils/getTokens";
 import type {
 	PreparePermit2BatchDataParams,
 	PreparePermit2BatchDataResult,
-} from "@/types/utils/preparePermit2BatchData";
+	PreparePermit2DataParams,
+	PreparePermit2DataResult,
+} from "@/types/utils/permit2";
 import { buildAddLiquidityCallData } from "@/utils/buildAddLiquidityCallData";
 import { buildSwapCallData } from "@/utils/buildSwapCallData";
 import { getPool } from "@/utils/getPool";
@@ -25,9 +27,10 @@ import { getPosition } from "@/utils/getPosition";
 import { getQuote } from "@/utils/getQuote";
 import { getTokens } from "@/utils/getTokens";
 import { preparePermit2BatchData } from "@/utils/preparePermit2BatchData";
+import { preparePermit2Data } from "@/utils/preparePermit2Data";
 import type { Currency } from "@uniswap/sdk-core";
 import type { Pool, PoolKey } from "@uniswap/v4-sdk";
-import type { Abi, Address, Hex, PublicClient } from "viem";
+import type { Abi, Address, PublicClient } from "viem";
 import { http, createPublicClient } from "viem";
 
 /**
@@ -208,7 +211,7 @@ export class UniDevKitV4 {
 	 * @returns Promise resolving to swap call data including calldata and value
 	 * @throws Error if SDK instance is not found or if swap call data is invalid
 	 */
-	async buildSwapCallData(params: BuildSwapCallDataParams): Promise<Hex> {
+	async buildSwapCallData(params: BuildSwapCallDataParams) {
 		return buildSwapCallData(params, this.instance);
 	}
 
@@ -235,5 +238,18 @@ export class UniDevKitV4 {
 		params: PreparePermit2BatchDataParams,
 	): Promise<PreparePermit2BatchDataResult> {
 		return preparePermit2BatchData(params, this.instance);
+	}
+
+	/**
+	 * Prepares the permit2 simple data for a single token. (Used to swap)
+	 * Use toSign.values to sign the permit2 simple data.
+	 * @param params @type {PreparePermit2DataParams}
+	 * @returns Promise resolving to permit2 simple data
+	 * @throws Error if SDK instance is not found or if permit2 simple data is invalid
+	 */
+	async preparePermit2Data(
+		params: PreparePermit2DataParams,
+	): Promise<PreparePermit2DataResult> {
+		return preparePermit2Data(params, this.instance);
 	}
 }

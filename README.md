@@ -125,14 +125,40 @@ const poolKey = await uniDevKit.getPoolKeyFromPoolId({
 ```
 
 ### `buildSwapCallData`
-Construct calldata and value for a Universal Router swap.
+Construct calldata for a Universal Router swap.
 ```ts
+// Basic swap
 const { calldata, value } = await uniDevKit.buildSwapCallData({
-  tokenIn,
-  tokenOut,
-  amountIn: "1000000000000000000",
-  recipient,
-  slippageBips: 50
+  tokenIn: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
+  amountIn: parseUnits("100", 6), // 100 USDC
+  pool: pool,
+  slippageTolerance: 50, // 0.5%
+  recipient: "0x..."
+});
+
+// Swap with permit2
+const permitData = await uniDevKit.preparePermit2Data({
+  token: tokenIn,
+  spender: uniDevKit.getContractAddress('universalRouter'),
+  owner: userAddress
+});
+
+const signature = await signer._signTypedData(permitData.toSign);
+const permitWithSignature = permitData.buildPermit2DataWithSignature(signature);
+
+const { calldata: calldataWithPermit, value: valueWithPermit } = await uniDevKit.buildSwapCallData({
+  tokenIn: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+  amountIn: parseUnits("100", 6),
+  pool: pool,
+  slippageTolerance: 50,
+  recipient: "0x...",
+  permit2Signature: permitWithSignature
+});
+
+const tx = await sendTransaction({
+  to: uniDevKit.getContractAddress('universalRouter'),
+  data: calldata,
+  value
 });
 ```
 

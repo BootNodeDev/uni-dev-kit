@@ -1,10 +1,25 @@
 import { calculateMinimumOutput } from "@/helpers/swap";
-import type { BuildSwapCallDataParams } from "@/types";
-import { COMMANDS } from "@/types";
+import { type BuildSwapCallDataParams, COMMANDS } from "@/types";
 import type { UniDevKitV4Instance } from "@/types/core";
 import { getQuote } from "@/utils/getQuote";
+import type { PermitSingle } from "@uniswap/permit2-sdk";
+import { Actions, V4Planner } from "@uniswap/v4-sdk";
 import { ethers } from "ethers";
 import type { Hex } from "viem";
+
+const buildPermit2StructInput = (permit: PermitSingle, signature: Hex) => {
+	return ethers.utils.defaultAbiCoder.encode(
+		[
+			"tuple(" +
+				"tuple(address token,uint160 amount,uint48 expiration,uint48 nonce) details," +
+				"address spender," +
+				"uint256 sigDeadline" +
+				")",
+			"bytes",
+		],
+		[permit, signature],
+	);
+};
 
 /**
  * Builds calldata for a Uniswap V4 swap
@@ -21,6 +36,7 @@ import type { Hex } from "viem";
  *
  * @example
  * ```typescript
+ * // Basic swap
  * const swapParams = {
  *   tokenIn: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
  *   amountIn: parseUnits("100", 6), // 100 USDC
@@ -28,7 +44,24 @@ import type { Hex } from "viem";
  *   slippageTolerance: 50, // 0.5%
  * };
  *
- * const calldata = await buildSwapCallData(swapParams);
+ * const calldata = await buildSwapCallData(swapParams, instance);
+ *
+ * // Swap with permit2
+ * const permitData = await preparePermit2Data({
+ *   token: tokenIn,
+ *   spender: universalRouterAddress,
+ *   owner: userAddress
+ * }, instance);
+ *
+ * const signature = await signer._signTypedData(permitData.toSign);
+ * const permitWithSignature = permitData.buildPermit2DataWithSignature(signature);
+ *
+ * const swapParamsWithPermit = {
+ *   ...swapParams,
+ *   permit2Signature: permitWithSignature
+ * };
+ *
+ * const calldataWithPermit = await buildSwapCallData(swapParamsWithPermit, instance);
  *
  * // Send transaction
  * const tx = await sendTransaction({
@@ -43,7 +76,14 @@ export async function buildSwapCallData(
 	instance: UniDevKitV4Instance,
 ): Promise<Hex> {
 	// Extract and set default parameters
-	const { tokenIn, amountIn, pool, slippageTolerance = 50 } = params;
+	const {
+		tokenIn,
+		amountIn,
+		pool,
+		slippageTolerance = 50,
+		permit2Signature,
+		recipient,
+	} = params;
 
 	const zeroForOne =
 		tokenIn.toLowerCase() === pool.poolKey.currency0.toLowerCase();
@@ -59,66 +99,66 @@ export async function buildSwapCallData(
 	);
 
 	// Calculate minimum output amount based on slippage
-	const amountOutMin = calculateMinimumOutput(
+	const amountOutMinimum = calculateMinimumOutput(
 		quote.amountOut,
 		slippageTolerance,
 	);
 
-	// Encode Universal Router commands
-	const commands = ethers.utils.solidityPack(
-		["uint8"],
-		[COMMANDS.V4_ROUTER_EXECUTE],
-	);
+	const planner = new V4Planner();
 
-	// Encode swap actions sequence
-	const actions = ethers.utils.solidityPack(
-		["uint8", "uint8", "uint8"],
-		[COMMANDS.SWAP_EXACT_IN_SINGLE, COMMANDS.SETTLE_ALL, COMMANDS.TAKE_ALL],
-	);
+	planner.addAction(Actions.SWAP_EXACT_IN_SINGLE, [
+		{
+			poolKey: pool.poolKey,
+			zeroForOne,
+			amountIn: amountIn.toString(),
+			amountOutMinimum: amountOutMinimum.toString(),
+			hookData: "0x",
+		},
+	]);
 
-	// Encode swap parameters
-	const exactInputSingleParams = ethers.utils.defaultAbiCoder.encode(
-		[
-			"tuple(tuple(address currency0, address currency1, uint24 fee, int24 tickSpacing, address hooks) poolKey, bool zeroForOne, uint128 amountIn, uint128 amountOutMinimum, bytes hookData)",
-		],
-		[
-			{
-				poolKey: pool.poolKey,
-				zeroForOne,
-				amountIn: ethers.BigNumber.from(amountIn.toString()),
-				amountOutMinimum: amountOutMin,
-				hookData: "0x",
-			},
-		],
-	);
+	const currencyIn = zeroForOne ? pool.currency0 : pool.currency1;
+	const currencyOut = zeroForOne ? pool.currency1 : pool.currency0;
 
-	// Encode token amounts for settlement
-	const swapParams = [
-		exactInputSingleParams,
-		ethers.utils.defaultAbiCoder.encode(
-			["address", "uint128"],
-			zeroForOne
-				? [pool.poolKey.currency0, amountIn]
-				: [pool.poolKey.currency1, amountIn],
-		),
-		ethers.utils.defaultAbiCoder.encode(
-			["address", "uint128"],
-			zeroForOne ? [pool.poolKey.currency1, 0] : [pool.poolKey.currency0, 0],
-		),
-	];
+	// Agrega la acción de settle
+	planner.addSettle(currencyIn, true);
 
-	// Encode final inputs
-	const inputs = [
+	// Agrega la acción de take
+	planner.addTake(currencyOut, recipient);
+
+	let commands = ethers.utils.solidityPack(["uint8"], [COMMANDS.V4_SWAP]);
+
+	if (permit2Signature) {
+		commands = ethers.utils.solidityPack(
+			["uint8", "uint8"],
+			[COMMANDS.PERMIT2_PERMIT, COMMANDS.V4_SWAP],
+		);
+	}
+
+	// Combine actions and params into a single bytes array to match with V4_SWAP command input
+	let inputs = [
+		// V4_SWAP input
 		ethers.utils.defaultAbiCoder.encode(
 			["bytes", "bytes[]"],
-			[actions, swapParams],
+			[planner.actions, planner.params],
 		),
 	];
 
-	// Set 5-minute deadline
-	const deadline = BigInt(Math.floor(Date.now() / 1000) + 60 * 5);
+	// If permit2Signature is provided, add the permit2 struct input to the inputs array in the first position
+	if (permit2Signature) {
+		inputs = [
+			buildPermit2StructInput(
+				permit2Signature.permit,
+				permit2Signature.signature,
+			),
+			ethers.utils.defaultAbiCoder.encode(
+				["bytes", "bytes[]"],
+				[planner.actions, planner.params],
+			),
+		];
+	}
 
-	// Create Universal Router interface
+	const deadline = BigInt(Math.floor(Date.now() / 1000) + 60 * 5); // 5 minutes
+
 	const universalRouterInterface = new ethers.utils.Interface([
 		"function execute(bytes commands, bytes[] inputs, uint256 deadline)",
 	]);
