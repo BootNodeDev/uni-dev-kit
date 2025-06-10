@@ -36,6 +36,7 @@ const buildPermit2StructInput = (permit: PermitSingle, signature: Hex) => {
  *
  * @example
  * ```typescript
+ * // Basic swap
  * const swapParams = {
  *   tokenIn: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
  *   amountIn: parseUnits("100", 6), // 100 USDC
@@ -43,7 +44,24 @@ const buildPermit2StructInput = (permit: PermitSingle, signature: Hex) => {
  *   slippageTolerance: 50, // 0.5%
  * };
  *
- * const calldata = await buildSwapCallData(swapParams);
+ * const calldata = await buildSwapCallData(swapParams, instance);
+ *
+ * // Swap with permit2
+ * const permitData = await preparePermit2Data({
+ *   token: tokenIn,
+ *   spender: universalRouterAddress,
+ *   owner: userAddress
+ * }, instance);
+ *
+ * const signature = await signer._signTypedData(permitData.toSign);
+ * const permitWithSignature = permitData.buildPermit2DataWithSignature(signature);
+ *
+ * const swapParamsWithPermit = {
+ *   ...swapParams,
+ *   permit2Signature: permitWithSignature
+ * };
+ *
+ * const calldataWithPermit = await buildSwapCallData(swapParamsWithPermit, instance);
  *
  * // Send transaction
  * const tx = await sendTransaction({
