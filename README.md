@@ -75,6 +75,7 @@ Full API documentation with TypeDoc: [https://bootnodedev.github.io/uni-dev-kit]
     - [`buildSwapCallData`](#buildswapcalldata)
     - [`buildAddLiquidityCallData`](#buildaddliquiditycalldata)
     - [`preparePermit2BatchCallData`](#preparepermit2batchcalldata)
+      - [Basis Points Reference](#basis-points-reference)
   - [Useful Links](#useful-links)
   - [Development](#development)
     - [Scripts](#scripts)
@@ -126,6 +127,7 @@ const poolKey = await uniDevKit.getPoolKeyFromPoolId({
 
 ### `buildSwapCallData`
 Construct calldata for a Universal Router swap.
+
 ```ts
 // Basic swap
 const { calldata, value } = await uniDevKit.buildSwapCallData({
@@ -143,22 +145,21 @@ const permitData = await uniDevKit.preparePermit2Data({
   owner: userAddress
 });
 
-const signature = await signer._signTypedData(permitData.toSign);
+const signature = await signer._signTypedData(
+  permitData.toSign.domain,
+  { PermitSingle: permitData.toSign.types.PermitSingle },
+  permitData.toSign.values
+);
+
 const permitWithSignature = permitData.buildPermit2DataWithSignature(signature);
 
-const { calldata: calldataWithPermit, value: valueWithPermit } = await uniDevKit.buildSwapCallData({
-  tokenIn: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-  amountIn: parseUnits("100", 6),
-  pool: pool,
+const { calldata, value } = await uniDevKit.buildSwapCallData({
+  tokenIn,
+  amountIn,
+  pool,
   slippageTolerance: 50,
-  recipient: "0x...",
+  recipient,
   permit2Signature: permitWithSignature
-});
-
-const tx = await sendTransaction({
-  to: uniDevKit.getContractAddress('universalRouter'),
-  data: calldata,
-  value
 });
 ```
 
@@ -212,6 +213,19 @@ const permitData = await uniDevKit.preparePermit2BatchCallData({
   owner: userAddress
 });
 ```
+
+#### Basis Points Reference
+
+Throughout the library, percentages are represented in basis points (bps). For example, when setting a slippage tolerance of 0.5%, you would use `50` bps. Here's a quick reference:
+
+| Basis Points (bps) | Fraction | Percentage |
+|:------------------:|:--------:|:----------:|
+| 1 | 1/10_000 | 0.01% |
+| 10 | 10/10_000 | 0.1% |
+| 100 | 100/10_000 | 1% |
+| 500 | 500/10_000 | 5% |
+| 1000 | 1000/10_000 | 10% |
+| 10_000 | 10_000/10_000 | 100% |
 
 ## Useful Links
 - [Uniswap V4 Docs](https://docs.uniswap.org/contracts/v4/overview)

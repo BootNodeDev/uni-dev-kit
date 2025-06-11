@@ -1,17 +1,14 @@
-import type { UniDevKitV4Instance } from "@/types";
-import type {
-	PreparePermit2DataParams,
-	PreparePermit2DataResult,
-} from "@/types/utils/permit2";
+import type { UniDevKitV4Instance } from '@/types'
+import type { PreparePermit2DataParams, PreparePermit2DataResult } from '@/types/utils/permit2'
 import {
-	AllowanceTransfer,
-	MaxUint160,
-	PERMIT2_ADDRESS,
-	type PermitSingle,
-} from "@uniswap/permit2-sdk";
-import type { TypedDataField } from "ethers";
-import type { Address, Hex } from "viem";
-import { zeroAddress } from "viem";
+  AllowanceTransfer,
+  MaxUint160,
+  PERMIT2_ADDRESS,
+  type PermitSingle,
+} from '@uniswap/permit2-sdk'
+import type { TypedDataField } from 'ethers'
+import type { Address, Hex } from 'viem'
+import { zeroAddress } from 'viem'
 
 /**
  * Prepares the permit2  data for a single token
@@ -60,104 +57,98 @@ import { zeroAddress } from "viem";
  * @throws Error if any required dependencies are missing
  */
 export async function preparePermit2Data(
-	params: PreparePermit2DataParams,
-	instance: UniDevKitV4Instance,
+  params: PreparePermit2DataParams,
+  instance: UniDevKitV4Instance,
 ): Promise<PreparePermit2DataResult> {
-	const { token, spender, owner, sigDeadline: sigDeadlineParam } = params;
+  const { token, spender, owner, sigDeadline: sigDeadlineParam } = params
 
-	const chainId = instance.chain.id;
+  const chainId = instance.chain.id
 
-	// calculate sigDeadline if not provided
-	let sigDeadline = sigDeadlineParam;
-	if (!sigDeadline) {
-		const blockTimestamp = await instance.client
-			.getBlock()
-			.then((block) => block.timestamp);
+  // calculate sigDeadline if not provided
+  let sigDeadline = sigDeadlineParam
+  if (!sigDeadline) {
+    const blockTimestamp = await instance.client.getBlock().then((block) => block.timestamp)
 
-		sigDeadline = Number(blockTimestamp + 60n * 60n); // 30 minutes from current block timestamp
-	}
+    sigDeadline = Number(blockTimestamp + 60n * 60n) // 30 minutes from current block timestamp
+  }
 
-	if (token.toLowerCase() === zeroAddress.toLowerCase()) {
-		throw new Error("Native tokens are not supported for permit2");
-	}
+  if (token.toLowerCase() === zeroAddress.toLowerCase()) {
+    throw new Error('Native tokens are not supported for permit2')
+  }
 
-	// Fetch allowance details for each token
-	const details = await instance.client.readContract({
-		address: PERMIT2_ADDRESS as `0x${string}`,
-		abi: [
-			{
-				name: "allowance",
-				type: "function",
-				stateMutability: "view",
-				inputs: [
-					{ name: "owner", type: "address" },
-					{ name: "token", type: "address" },
-					{ name: "spender", type: "address" },
-				],
-				outputs: [
-					{
-						components: [
-							{ name: "amount", type: "uint160" },
-							{ name: "expiration", type: "uint48" },
-							{ name: "nonce", type: "uint48" },
-						],
-						name: "details",
-						type: "tuple",
-					},
-				],
-			},
-		] as const,
-		functionName: "allowance",
-		args: [
-			owner as `0x${string}`,
-			token as `0x${string}`,
-			spender as `0x${string}`,
-		],
-	});
+  // Fetch allowance details for each token
+  const details = await instance.client.readContract({
+    address: PERMIT2_ADDRESS as `0x${string}`,
+    abi: [
+      {
+        name: 'allowance',
+        type: 'function',
+        stateMutability: 'view',
+        inputs: [
+          { name: 'owner', type: 'address' },
+          { name: 'token', type: 'address' },
+          { name: 'spender', type: 'address' },
+        ],
+        outputs: [
+          {
+            components: [
+              { name: 'amount', type: 'uint160' },
+              { name: 'expiration', type: 'uint48' },
+              { name: 'nonce', type: 'uint48' },
+            ],
+            name: 'details',
+            type: 'tuple',
+          },
+        ],
+      },
+    ] as const,
+    functionName: 'allowance',
+    args: [owner as `0x${string}`, token as `0x${string}`, spender as `0x${string}`],
+  })
 
-	const permit: PermitSingle = {
-		details: {
-			token,
-			amount: MaxUint160.toString(),
-			expiration: details.expiration.toString(),
-			nonce: details.nonce.toString(),
-		},
-		spender,
-		sigDeadline,
-	};
+  const permit: PermitSingle = {
+    details: {
+      token,
+      amount: MaxUint160.toString(),
+      expiration: details.expiration.toString(),
+      nonce: details.nonce.toString(),
+    },
+    spender,
+    sigDeadline,
+  }
 
-	// Create the permit object
-	// Get the data needed for signing
-	const { domain, types, values } = AllowanceTransfer.getPermitData(
-		permit,
-		PERMIT2_ADDRESS,
-		chainId,
-	) as {
-		domain: PreparePermit2DataResult["toSign"]["domain"];
-		types: Record<string, TypedDataField[]>;
-		values: PermitSingle;
-	};
+  // Create the permit object
+  // Get the data needed for signing
+  const { domain, types, values } = AllowanceTransfer.getPermitData(
+    permit,
+    PERMIT2_ADDRESS,
+    chainId,
+  ) as {
+    domain: PreparePermit2DataResult['toSign']['domain']
+    types: Record<string, TypedDataField[]>
+    values: PermitSingle
+  }
 
-	const buildPermit2DataWithSignature = (
-		signature: Hex,
-	): ReturnType<PreparePermit2DataResult["buildPermit2DataWithSignature"]> => {
-		return {
-			owner: owner as Address,
-			permit,
-			signature,
-		};
-	};
+  const buildPermit2DataWithSignature = (
+    signature: Hex,
+  ): ReturnType<PreparePermit2DataResult['buildPermit2DataWithSignature']> => {
+    return {
+      owner: owner as Address,
+      permit,
+      signature,
+    }
+  }
 
-	return {
-		buildPermit2DataWithSignature,
-		owner,
-		permit,
-		toSign: {
-			domain,
-			types,
-			values,
-			primaryType: "PermitSingle",
-			message: values as unknown as Record<string, unknown>,
-		},
-	};
+  return {
+    buildPermit2DataWithSignature,
+    owner,
+    permit,
+    toSign: {
+      domain,
+      types,
+      values,
+      primaryType: 'PermitSingle',
+      message: values as unknown as Record<string, unknown>,
+    },
+  }
 }

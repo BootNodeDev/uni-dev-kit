@@ -1,18 +1,14 @@
-import type { UniDevKitV4Instance } from "@/types";
+import type { UniDevKitV4Instance } from '@/types'
 import type {
-	BuildAddLiquidityCallDataResult,
-	BuildAddLiquidityParams,
-} from "@/types/utils/buildAddLiquidityCallData";
-import { Percent } from "@uniswap/sdk-core";
-import {
-	TickMath,
-	encodeSqrtRatioX96,
-	nearestUsableTick,
-} from "@uniswap/v3-sdk";
-import { Position, V4PositionManager } from "@uniswap/v4-sdk";
+  BuildAddLiquidityCallDataResult,
+  BuildAddLiquidityParams,
+} from '@/types/utils/buildAddLiquidityCallData'
+import { Percent } from '@uniswap/sdk-core'
+import { TickMath, encodeSqrtRatioX96, nearestUsableTick } from '@uniswap/v3-sdk'
+import { Position, V4PositionManager } from '@uniswap/v4-sdk'
 
-const DEFAULT_DEADLINE = 1800n; // 30 minutes
-const DEFAULT_SLIPPAGE_TOLERANCE = 50;
+const DEFAULT_DEADLINE = 1800n // 30 minutes
+const DEFAULT_SLIPPAGE_TOLERANCE = 50
 
 /**
  * Builds the calldata and native value required to add liquidity to a Uniswap V4 pool.
@@ -69,123 +65,113 @@ const DEFAULT_SLIPPAGE_TOLERANCE = 50;
  */
 
 export async function buildAddLiquidityCallData(
-	params: BuildAddLiquidityParams,
-	instance: UniDevKitV4Instance,
+  params: BuildAddLiquidityParams,
+  instance: UniDevKitV4Instance,
 ): Promise<BuildAddLiquidityCallDataResult> {
-	const {
-		pool,
-		amount0,
-		amount1,
-		recipient,
-		tickLower: tickLowerParam,
-		tickUpper: tickUpperParam,
-		slippageTolerance = DEFAULT_SLIPPAGE_TOLERANCE,
-		deadline: deadlineParam,
-		permit2BatchSignature,
-	} = params;
+  const {
+    pool,
+    amount0,
+    amount1,
+    recipient,
+    tickLower: tickLowerParam,
+    tickUpper: tickUpperParam,
+    slippageTolerance = DEFAULT_SLIPPAGE_TOLERANCE,
+    deadline: deadlineParam,
+    permit2BatchSignature,
+  } = params
 
-	console.log("params", params);
+  console.log('params', params)
 
-	try {
-		const deadline =
-			deadlineParam ??
-			(
-				await instance.client
-					.getBlock()
-					.then((b) => b.timestamp + DEFAULT_DEADLINE)
-			).toString();
+  try {
+    const deadline =
+      deadlineParam ??
+      (await instance.client.getBlock().then((b) => b.timestamp + DEFAULT_DEADLINE)).toString()
 
-		const slippagePercent = new Percent(slippageTolerance, 10_000);
-		const createPool = pool.liquidity.toString() === "0";
+    const slippagePercent = new Percent(slippageTolerance, 10_000)
+    const createPool = pool.liquidity.toString() === '0'
 
-		const tickLower =
-			tickLowerParam ?? nearestUsableTick(TickMath.MIN_TICK, pool.tickSpacing);
-		const tickUpper =
-			tickUpperParam ?? nearestUsableTick(TickMath.MAX_TICK, pool.tickSpacing);
+    const tickLower = tickLowerParam ?? nearestUsableTick(TickMath.MIN_TICK, pool.tickSpacing)
+    const tickUpper = tickUpperParam ?? nearestUsableTick(TickMath.MAX_TICK, pool.tickSpacing)
 
-		// Validate input
-		if (!amount0 && !amount1) {
-			throw new Error("At least one of amount0 or amount1 must be provided.");
-		}
+    // Validate input
+    if (!amount0 && !amount1) {
+      throw new Error('At least one of amount0 or amount1 must be provided.')
+    }
 
-		let sqrtPriceX96: string;
-		if (createPool) {
-			if (!amount0 || !amount1) {
-				throw new Error(
-					"Both amount0 and amount1 are required when creating a new pool.",
-				);
-			}
-			sqrtPriceX96 = encodeSqrtRatioX96(amount1, amount0).toString();
-		} else {
-			sqrtPriceX96 = pool.sqrtRatioX96.toString();
-		}
+    let sqrtPriceX96: string
+    if (createPool) {
+      if (!amount0 || !amount1) {
+        throw new Error('Both amount0 and amount1 are required when creating a new pool.')
+      }
+      sqrtPriceX96 = encodeSqrtRatioX96(amount1, amount0).toString()
+    } else {
+      sqrtPriceX96 = pool.sqrtRatioX96.toString()
+    }
 
-		// Build position
-		let position: Position;
-		if (amount0 && amount1) {
-			position = Position.fromAmounts({
-				pool,
-				tickLower,
-				tickUpper,
-				amount0,
-				amount1,
-				useFullPrecision: true,
-			});
-		} else if (amount0) {
-			position = Position.fromAmount0({
-				pool,
-				tickLower,
-				tickUpper,
-				amount0,
-				useFullPrecision: true,
-			});
-		} else if (amount1) {
-			position = Position.fromAmount1({
-				pool,
-				tickLower,
-				tickUpper,
-				amount1,
-			});
-		} else {
-			throw new Error(
-				"Invalid input: at least one of amount0 or amount1 must be defined.",
-			);
-		}
+    // Build position
+    let position: Position
+    if (amount0 && amount1) {
+      position = Position.fromAmounts({
+        pool,
+        tickLower,
+        tickUpper,
+        amount0,
+        amount1,
+        useFullPrecision: true,
+      })
+    } else if (amount0) {
+      position = Position.fromAmount0({
+        pool,
+        tickLower,
+        tickUpper,
+        amount0,
+        useFullPrecision: true,
+      })
+    } else if (amount1) {
+      position = Position.fromAmount1({
+        pool,
+        tickLower,
+        tickUpper,
+        amount1,
+      })
+    } else {
+      throw new Error('Invalid input: at least one of amount0 or amount1 must be defined.')
+    }
 
-		console.log("positionAmount0", position.amount0.toSignificant(6));
-		console.log("positionAmount1", position.amount1.toSignificant(6));
-		console.log("position", position);
+    console.log('positionAmount0', position.amount0.toSignificant(6))
+    console.log('positionAmount1', position.amount1.toSignificant(6))
+    console.log('position', position)
 
-		// Get native currency
-		const nativeCurrency = pool.token0.isNative
-			? pool.token0
-			: pool.token1.isNative
-				? pool.token1
-				: undefined;
+    // Get native currency
+    const nativeCurrency = pool.token0.isNative
+      ? pool.token0
+      : pool.token1.isNative
+        ? pool.token1
+        : undefined
 
-		// Build calldata
-		const { calldata, value } = V4PositionManager.addCallParameters(position, {
-			recipient,
-			deadline,
-			slippageTolerance: slippagePercent,
-			createPool,
-			sqrtPriceX96,
-			useNative: nativeCurrency,
-			batchPermit: permit2BatchSignature
-				? {
-						owner: permit2BatchSignature.owner,
-						permitBatch: permit2BatchSignature.permitBatch,
-						signature: permit2BatchSignature.signature,
-					}
-				: undefined,
-		});
+    // Build calldata
+    const { calldata, value } = V4PositionManager.addCallParameters(position, {
+      recipient,
+      deadline,
+      slippageTolerance: slippagePercent,
+      createPool,
+      sqrtPriceX96,
+      useNative: nativeCurrency,
+      batchPermit: permit2BatchSignature
+        ? {
+            owner: permit2BatchSignature.owner,
+            permitBatch: permit2BatchSignature.permitBatch,
+            signature: permit2BatchSignature.signature,
+          }
+        : undefined,
+    })
 
-		return {
-			calldata,
-			value,
-		};
-	} catch (error) {
-		console.error(error);
-		throw error;
-	}
+    return {
+      calldata,
+      value,
+    }
+  } catch (error) {
+    console.error(error)
+    throw error
+  }
 }

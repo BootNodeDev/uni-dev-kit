@@ -5,10 +5,8 @@
  * @returns Tuple of [token0, token1] in sorted order
  */
 export function sortTokens(
-	token0: `0x${string}`,
-	token1: `0x${string}`,
+  token0: `0x${string}`,
+  token1: `0x${string}`,
 ): [`0x${string}`, `0x${string}`] {
-	return token0.toLowerCase() < token1.toLowerCase()
-		? [token0, token1]
-		: [token1, token0];
+  return token0.toLowerCase() < token1.toLowerCase() ? [token0, token1] : [token1, token0]
 }

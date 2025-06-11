@@ -1,23 +1,24 @@
-import { Percent } from "@uniswap/sdk-core";
+import { BIPS_BASE } from '@/helpers/percent'
 
 /**
- * Utility function to calculate minimum output amount based on slippage
- * Uses Uniswap SDK's Percent class for accurate calculations
+ * Calculates the minimum output amount after applying slippage tolerance using native BigInt.
  *
- * @param expectedOutput - Expected output amount
- * @param slippageTolerance - Slippage tolerance in basis points
- * @returns Minimum output amount accounting for slippage
+ * @param expectedOutput - The expected output amount (e.g., in smallest unit)
+ * @param slippageBps - Slippage in basis points (BPS). For example:
+ *   - 50 = 0.5%
+ *   - 100 = 1%
+ *   - 1 = 0.01%
+ *
+ * @returns Minimum amount after slippage is applied.
+ *
+ * @example
+ * ```ts
+ * const minOut = calculateMinimumOutput(1_000_000n, 50); // 995_000n
+ * ```
  */
-export function calculateMinimumOutput(
-	expectedOutput: bigint,
-	slippageTolerance: number,
-): bigint {
-	// Use SDK's Percent class for precise slippage calculations
-	const slippagePercent = new Percent(slippageTolerance, 10_000);
-	const slippageDecimal = Number.parseFloat(slippagePercent.toFixed(18));
-	const slippageAmount = BigInt(
-		Math.floor(Number(expectedOutput) * slippageDecimal),
-	);
+export function calculateMinimumOutput(expectedOutput: bigint, slippageBps: number): bigint {
+  const numerator = BigInt(BIPS_BASE - slippageBps)
+  const denominator = BigInt(BIPS_BASE)
 
-	return expectedOutput - slippageAmount;
+  return (expectedOutput * numerator) / denominator
 }

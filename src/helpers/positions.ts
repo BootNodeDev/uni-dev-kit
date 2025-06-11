@@ -12,8 +12,8 @@
  * ```
  */
 export function decodeInt24FromInfo(info: bigint, shift: number): number {
-	const raw = (info >> BigInt(shift)) & 0xffffffn; // Extract 24 bits
-	return raw >= 0x800000n ? Number(raw - 0x1000000n) : Number(raw); // Handle sign bit
+  const raw = (info >> BigInt(shift)) & 0xffffffn // Extract 24 bits
+  return raw >= 0x800000n ? Number(raw - 0x1000000n) : Number(raw) // Handle sign bit
 }
 
 /**
@@ -38,15 +38,15 @@ export function decodeInt24FromInfo(info: bigint, shift: number): number {
  * ```
  */
 export function decodePositionInfo(info: bigint): {
-	hasSubscriber: number;
-	tickLower: number;
-	tickUpper: number;
-	poolId: bigint;
+  hasSubscriber: number
+  tickLower: number
+  tickUpper: number
+  poolId: bigint
 } {
-	return {
-		hasSubscriber: Number(info & 0xffn),
-		tickLower: decodeInt24FromInfo(info, 8),
-		tickUpper: decodeInt24FromInfo(info, 32),
-		poolId: info >> 56n,
-	};
+  return {
+    hasSubscriber: Number(info & 0xffn),
+    tickLower: decodeInt24FromInfo(info, 8),
+    tickUpper: decodeInt24FromInfo(info, 32),
+    poolId: info >> 56n,
+  }
 }
