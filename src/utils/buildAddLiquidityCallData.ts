@@ -1,14 +1,13 @@
+import { DEFAULT_SLIPPAGE_TOLERANCE } from '@/constants/common'
+import { percentFromBips } from '@/helpers/percent'
 import type { UniDevKitV4Instance } from '@/types'
 import type {
   BuildAddLiquidityCallDataResult,
   BuildAddLiquidityParams,
 } from '@/types/utils/buildAddLiquidityCallData'
-import { Percent } from '@uniswap/sdk-core'
+import { getDefaultDeadline } from '@/utils/getDefaultDeadline'
 import { TickMath, encodeSqrtRatioX96, nearestUsableTick } from '@uniswap/v3-sdk'
 import { Position, V4PositionManager } from '@uniswap/v4-sdk'
-
-const DEFAULT_DEADLINE = 1800n // 30 minutes
-const DEFAULT_SLIPPAGE_TOLERANCE = 50
 
 /**
  * Builds the calldata and native value required to add liquidity to a Uniswap V4 pool.
@@ -80,14 +79,10 @@ export async function buildAddLiquidityCallData(
     permit2BatchSignature,
   } = params
 
-  console.log('params', params)
-
   try {
-    const deadline =
-      deadlineParam ??
-      (await instance.client.getBlock().then((b) => b.timestamp + DEFAULT_DEADLINE)).toString()
+    const deadline = deadlineParam ?? (await getDefaultDeadline(instance)).toString()
 
-    const slippagePercent = new Percent(slippageTolerance, 10_000)
+    const slippagePercent = percentFromBips(slippageTolerance)
     const createPool = pool.liquidity.toString() === '0'
 
     const tickLower = tickLowerParam ?? nearestUsableTick(TickMath.MIN_TICK, pool.tickSpacing)

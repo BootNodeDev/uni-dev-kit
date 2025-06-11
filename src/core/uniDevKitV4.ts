@@ -17,6 +17,10 @@ import type {
   PreparePermit2DataResult,
 } from '@/types/utils/permit2'
 import { buildAddLiquidityCallData } from '@/utils/buildAddLiquidityCallData'
+import {
+  type BuildRemoveLiquidityCallDataParams,
+  buildRemoveLiquidityCallData,
+} from '@/utils/buildRemoveLiquidityCallData'
 import { buildSwapCallData } from '@/utils/buildSwapCallData'
 import { getPool } from '@/utils/getPool'
 import { getPoolKeyFromPoolId } from '@/utils/getPoolKeyFromPoolId'
@@ -233,5 +237,15 @@ export class UniDevKitV4 {
    */
   async preparePermit2Data(params: PreparePermit2DataParams): Promise<PreparePermit2DataResult> {
     return preparePermit2Data(params, this.instance)
+  }
+
+  /**
+   * Builds a remove liquidity call data for a given remove liquidity parameters.
+   * @param params @type {BuildRemoveLiquidityCallDataParams}
+   * @returns Promise resolving to remove liquidity call data including calldata and value
+   * @throws Error if SDK instance is not found or if remove liquidity call data is invalid
+   */
+  async buildRemoveLiquidityCallData(params: BuildRemoveLiquidityCallDataParams) {
+    return buildRemoveLiquidityCallData(params, this.instance)
   }
 }
