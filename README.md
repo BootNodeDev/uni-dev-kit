@@ -75,6 +75,7 @@ Full API documentation with TypeDoc: [https://bootnodedev.github.io/uni-dev-kit]
     - [`buildSwapCallData`](#buildswapcalldata)
     - [`buildAddLiquidityCallData`](#buildaddliquiditycalldata)
     - [`preparePermit2BatchCallData`](#preparepermit2batchcalldata)
+    - [`buildRemoveLiquidityCallData`](#buildremoveliquiditycalldata)
       - [Basis Points Reference](#basis-points-reference)
   - [Useful Links](#useful-links)
   - [Development](#development)
@@ -211,6 +212,22 @@ const permitData = await uniDevKit.preparePermit2BatchCallData({
   tokens: [tokenA.address, tokenB.address],
   spender: uniDevKit.getContractAddress('positionManager'),
   owner: userAddress
+});
+```
+
+### `buildRemoveLiquidityCallData`
+Build calldata to remove liquidity from a pool.
+```ts
+const { calldata, value } = await uniDevKit.buildRemoveLiquidityCallData({
+  liquidityPercentage: 10_000, // 100%
+  tokenId: '123',
+  slippageTolerance: 50, // 0.5%
+});
+
+const tx = await sendTransaction({
+  to: uniDevKit.getContractAddress('positionManager'),
+  data: calldata,
+  value
 });
 ```
 

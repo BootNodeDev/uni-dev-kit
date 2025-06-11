@@ -1,5 +1,4 @@
 import { createMockSdkInstance } from '@/test/helpers/sdkInstance'
-import { getDefaultDeadline } from '@/utils/getDefaultDeadline'
 import { getPosition } from '@/utils/getPosition'
 import { Token } from '@uniswap/sdk-core'
 import { Pool, Position, V4PositionManager } from '@uniswap/v4-sdk'
