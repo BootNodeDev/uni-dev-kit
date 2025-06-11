@@ -1,13 +1,13 @@
-import type { Address } from "viem";
+import type { Address } from 'viem'
 
 /**
  * Standard fee tiers for Uniswap V4 pools.
  */
 export enum FeeTier {
-	LOWEST = 100, // 0.01%
-	LOW = 500, // 0.05%
-	MEDIUM = 3000, // 0.3%
-	HIGH = 10000, // 1%
+  LOWEST = 100, // 0.01%
+  LOW = 500, // 0.05%
+  MEDIUM = 3000, // 0.3%
+  HIGH = 10000, // 1%
 }
 
 /**
@@ -15,22 +15,22 @@ export enum FeeTier {
  * Following Uniswap V4's standard configurations.
  */
 export const TICK_SPACING_BY_FEE: Record<FeeTier, number> = {
-	[FeeTier.LOWEST]: 1,
-	[FeeTier.LOW]: 10,
-	[FeeTier.MEDIUM]: 60,
-	[FeeTier.HIGH]: 200,
-};
+  [FeeTier.LOWEST]: 1,
+  [FeeTier.LOW]: 10,
+  [FeeTier.MEDIUM]: 60,
+  [FeeTier.HIGH]: 200,
+}
 
 /**
  * Parameters for retrieving a Uniswap V4 pool instance.
  */
 export interface PoolParams {
-	/** Array of two token addresses representing the pair */
-	tokens: [Address, Address];
-	/** Optional fee tier of the pool (default: FeeTier.MEDIUM) */
-	fee?: FeeTier;
-	/** Optional tick spacing for the pool (default: derived from fee tier) */
-	tickSpacing?: number;
-	/** Optional hooks contract address (default: DEFAULT_HOOKS) */
-	hooks?: `0x${string}`;
+  /** Array of two token addresses representing the pair */
+  tokens: [Address, Address]
+  /** Optional fee tier of the pool (default: FeeTier.MEDIUM) */
+  fee?: FeeTier
+  /** Optional tick spacing for the pool (default: derived from fee tier) */
+  tickSpacing?: number
+  /** Optional hooks contract address (default: DEFAULT_HOOKS) */
+  hooks?: `0x${string}`
 }

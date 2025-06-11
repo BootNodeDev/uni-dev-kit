@@ -1,18 +1,18 @@
-import type { UniDevKitV4Instance } from "@/types";
+import type { UniDevKitV4Instance } from '@/types'
 import type {
-	PreparePermit2BatchDataParams,
-	PreparePermit2BatchDataResult,
-} from "@/types/utils/permit2";
+  PreparePermit2BatchDataParams,
+  PreparePermit2BatchDataResult,
+} from '@/types/utils/permit2'
 import {
-	AllowanceTransfer,
-	MaxUint160,
-	PERMIT2_ADDRESS,
-	type PermitBatch,
-} from "@uniswap/permit2-sdk";
-import type { BatchPermitOptions } from "@uniswap/v4-sdk";
-import type { TypedDataField } from "ethers";
-import type { Hex } from "viem";
-import { zeroAddress } from "viem"; /**
+  AllowanceTransfer,
+  MaxUint160,
+  PERMIT2_ADDRESS,
+  type PermitBatch,
+} from '@uniswap/permit2-sdk'
+import type { BatchPermitOptions } from '@uniswap/v4-sdk'
+import type { TypedDataField } from 'ethers'
+import type { Hex } from 'viem'
+import { zeroAddress } from 'viem' /**
  * Prepares the permit2 batch data for multiple tokens
  *
  * This function creates a batch permit that allows a spender to use multiple tokens
@@ -60,108 +60,102 @@ import { zeroAddress } from "viem"; /**
  * @throws Error if any required dependencies are missing
  */
 export async function preparePermit2BatchData(
-	params: PreparePermit2BatchDataParams,
-	instance: UniDevKitV4Instance,
+  params: PreparePermit2BatchDataParams,
+  instance: UniDevKitV4Instance,
 ): Promise<PreparePermit2BatchDataResult> {
-	const { tokens, spender, owner, sigDeadline: sigDeadlineParam } = params;
+  const { tokens, spender, owner, sigDeadline: sigDeadlineParam } = params
 
-	const chainId = instance.chain.id;
+  const chainId = instance.chain.id
 
-	// calculate sigDeadline if not provided
-	let sigDeadline = sigDeadlineParam;
-	if (!sigDeadline) {
-		const blockTimestamp = await instance.client
-			.getBlock()
-			.then((block) => block.timestamp);
+  // calculate sigDeadline if not provided
+  let sigDeadline = sigDeadlineParam
+  if (!sigDeadline) {
+    const blockTimestamp = await instance.client.getBlock().then((block) => block.timestamp)
 
-		sigDeadline = Number(blockTimestamp + 60n * 60n); // 30 minutes from current block timestamp
-	}
+    sigDeadline = Number(blockTimestamp + 60n * 60n) // 30 minutes from current block timestamp
+  }
 
-	const noNativeTokens = tokens.filter(
-		(token) => token.toLowerCase() !== zeroAddress.toLowerCase(),
-	);
+  const noNativeTokens = tokens.filter((token) => token.toLowerCase() !== zeroAddress.toLowerCase())
 
-	// Fetch allowance details for each token
-	const details = await instance.client.multicall({
-		allowFailure: false,
-		contracts: noNativeTokens.map((token) => ({
-			address: PERMIT2_ADDRESS as `0x${string}`,
-			abi: [
-				{
-					name: "allowance",
-					type: "function",
-					stateMutability: "view",
-					inputs: [
-						{ name: "owner", type: "address" },
-						{ name: "token", type: "address" },
-						{ name: "spender", type: "address" },
-					],
-					outputs: [
-						{
-							components: [
-								{ name: "amount", type: "uint160" },
-								{ name: "expiration", type: "uint48" },
-								{ name: "nonce", type: "uint48" },
-							],
-							name: "details",
-							type: "tuple",
-						},
-					],
-				},
-			] as const,
-			functionName: "allowance",
-			args: [owner, token, spender],
-		})),
-	});
+  // Fetch allowance details for each token
+  const details = await instance.client.multicall({
+    allowFailure: false,
+    contracts: noNativeTokens.map((token) => ({
+      address: PERMIT2_ADDRESS as `0x${string}`,
+      abi: [
+        {
+          name: 'allowance',
+          type: 'function',
+          stateMutability: 'view',
+          inputs: [
+            { name: 'owner', type: 'address' },
+            { name: 'token', type: 'address' },
+            { name: 'spender', type: 'address' },
+          ],
+          outputs: [
+            {
+              components: [
+                { name: 'amount', type: 'uint160' },
+                { name: 'expiration', type: 'uint48' },
+                { name: 'nonce', type: 'uint48' },
+              ],
+              name: 'details',
+              type: 'tuple',
+            },
+          ],
+        },
+      ] as const,
+      functionName: 'allowance',
+      args: [owner, token, spender],
+    })),
+  })
 
-	const results = noNativeTokens.map((token, index) => {
-		const { expiration, nonce } = details[index];
-		return {
-			token,
-			amount: MaxUint160.toString(),
-			expiration: Number(expiration),
-			nonce: Number(nonce),
-		};
-	});
+  const results = noNativeTokens.map((token, index) => {
+    const { expiration, nonce } = details[index]
+    return {
+      token,
+      amount: MaxUint160.toString(),
+      expiration: Number(expiration),
+      nonce: Number(nonce),
+    }
+  })
 
-	// Create the permit batch object
-	const permitBatch = {
-		details: results,
-		spender,
-		sigDeadline,
-	};
+  // Create the permit batch object
+  const permitBatch = {
+    details: results,
+    spender,
+    sigDeadline,
+  }
 
-	// Get the data needed for signing
-	const { domain, types, values } = AllowanceTransfer.getPermitData(
-		permitBatch,
-		PERMIT2_ADDRESS,
-		chainId,
-	) as {
-		domain: PreparePermit2BatchDataResult["toSign"]["domain"];
-		types: Record<string, TypedDataField[]>;
-		values: PermitBatch;
-	};
+  // Get the data needed for signing
+  const { domain, types, values } = AllowanceTransfer.getPermitData(
+    permitBatch,
+    PERMIT2_ADDRESS,
+    chainId,
+  ) as {
+    domain: PreparePermit2BatchDataResult['toSign']['domain']
+    types: Record<string, TypedDataField[]>
+    values: PermitBatch
+  }
 
-	const buildPermit2BatchDataWithSignature = (
-		signature: string | Hex,
-	): BatchPermitOptions => {
-		return {
-			owner,
-			permitBatch,
-			signature,
-		};
-	};
+  const buildPermit2BatchDataWithSignature = (signature: string | Hex): BatchPermitOptions => {
+    return {
+      owner,
+      permitBatch,
+      signature,
+    }
+  }
 
-	return {
-		buildPermit2BatchDataWithSignature,
-		owner,
-		permitBatch,
-		toSign: {
-			domain,
-			types,
-			values,
-			primaryType: "PermitBatch",
-			message: values as unknown as Record<string, unknown>,
-		},
-	};
+  return {
+    buildPermit2BatchDataWithSignature,
+    owner,
+    permitBatch,
+    toSign: {
+      domain,
+      types,
+      values,
+      primaryType: 'PermitBatch',
+      message: values as unknown as Record<string, unknown>,
+    },
+  }
 }

@@ -1,4 +1,4 @@
-import { FeeTier, TICK_SPACING_BY_FEE } from "@/types/utils/getPool";
+import { FeeTier, TICK_SPACING_BY_FEE } from '@/types/utils/getPool'
 
 /**
  * Gets the appropriate tick spacing for a given fee tier.
@@ -7,12 +7,12 @@ import { FeeTier, TICK_SPACING_BY_FEE } from "@/types/utils/getPool";
  * @throws Error if fee tier is not supported
  */
 export function getTickSpacingForFee(fee: number): number {
-	if (!Object.values(FeeTier).includes(fee)) {
-		throw new Error(
-			`Unsupported fee tier: ${fee}. Supported tiers: ${Object.values(FeeTier).join(", ")}`,
-		);
-	}
-	return TICK_SPACING_BY_FEE[fee as FeeTier];
+  if (!Object.values(FeeTier).includes(fee)) {
+    throw new Error(
+      `Unsupported fee tier: ${fee}. Supported tiers: ${Object.values(FeeTier).join(', ')}`,
+    )
+  }
+  return TICK_SPACING_BY_FEE[fee as FeeTier]
 }
 
 /**
@@ -21,7 +21,7 @@ export function getTickSpacingForFee(fee: number): number {
  * @returns True if the fee tier is supported
  */
 export function isValidFeeTier(fee: number): boolean {
-	return Object.values(FeeTier).includes(fee);
+  return Object.values(FeeTier).includes(fee)
 }
 
 /**
@@ -31,8 +31,8 @@ export function isValidFeeTier(fee: number): boolean {
  * @throws Error if fee tier is not supported
  */
 export function getFeePercentage(fee: number): string {
-	if (!isValidFeeTier(fee)) {
-		throw new Error(`Unsupported fee tier: ${fee}`);
-	}
-	return `${(fee / 10000).toFixed(2)}%`;
+  if (!isValidFeeTier(fee)) {
+    throw new Error(`Unsupported fee tier: ${fee}`)
+  }
+  return `${(fee / 10000).toFixed(2)}%`
 }

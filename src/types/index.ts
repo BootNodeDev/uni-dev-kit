@@ -1,2 +1,2 @@
-export * from "@/types/core";
-export * from "@/types/utils";
+export * from '@/types/core'
+export * from '@/types/utils'

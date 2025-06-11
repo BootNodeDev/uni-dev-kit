@@ -1,7 +1,7 @@
-import V4PositionManagerAbi from "@/constants/abis/V4PositionMananger";
-import type { UniDevKitV4Instance } from "@/types/core";
-import type { GetPoolKeyFromPoolIdParams } from "@/types/utils/getPoolKeyFromPoolId";
-import type { PoolKey } from "@uniswap/v4-sdk";
+import V4PositionManagerAbi from '@/constants/abis/V4PositionMananger'
+import type { UniDevKitV4Instance } from '@/types/core'
+import type { GetPoolKeyFromPoolIdParams } from '@/types/utils/getPoolKeyFromPoolId'
+import type { PoolKey } from '@uniswap/v4-sdk'
 
 /**
  * Retrieves the pool key information for a given pool ID.
@@ -10,27 +10,26 @@ import type { PoolKey } from "@uniswap/v4-sdk";
  * @throws Error if SDK instance is not found
  */
 export async function getPoolKeyFromPoolId(
-	params: GetPoolKeyFromPoolIdParams,
-	instance: UniDevKitV4Instance,
+  params: GetPoolKeyFromPoolIdParams,
+  instance: UniDevKitV4Instance,
 ): Promise<PoolKey> {
-	const { client, contracts } = instance;
-	const { positionManager } = contracts;
+  const { client, contracts } = instance
+  const { positionManager } = contracts
 
-	const poolId25Bytes = `0x${params.poolId.slice(2, 52)}` as `0x${string}`;
+  const poolId25Bytes = `0x${params.poolId.slice(2, 52)}` as `0x${string}`
 
-	const [currency0, currency1, fee, tickSpacing, hooks] =
-		await client.readContract({
-			address: positionManager,
-			abi: V4PositionManagerAbi,
-			functionName: "poolKeys",
-			args: [poolId25Bytes],
-		});
+  const [currency0, currency1, fee, tickSpacing, hooks] = await client.readContract({
+    address: positionManager,
+    abi: V4PositionManagerAbi,
+    functionName: 'poolKeys',
+    args: [poolId25Bytes],
+  })
 
-	return {
-		currency0,
-		currency1,
-		fee,
-		tickSpacing,
-		hooks,
-	};
+  return {
+    currency0,
+    currency1,
+    fee,
+    tickSpacing,
+    hooks,
+  }
 }
