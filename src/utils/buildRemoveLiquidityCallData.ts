@@ -1,34 +1,33 @@
-import { Percent } from '@uniswap/sdk-core'
-import { type Position, V4PositionManager } from '@uniswap/v4-sdk'
+import { DEFAULT_SLIPPAGE_TOLERANCE } from '@/constants/common'
+import { percentFromBips } from '@/helpers/percent'
+import type { UniDevKitV4Instance } from '@/types'
+import { getDefaultDeadline } from '@/utils/getDefaultDeadline'
+import { getPosition } from '@/utils/getPosition'
+import { V4PositionManager } from '@uniswap/v4-sdk'
 
 /**
  * Parameters required to build the calldata for removing liquidity from a Uniswap v4 position.
  */
 export interface BuildRemoveLiquidityCallDataParams {
   /**
-   * The position object representing the liquidity position to modify.
-   */
-  position: Position
-
-  /**
    * The percentage of liquidity to remove from the position.
    */
   liquidityPercentage: number
 
   /**
-   * The deadline for the transaction.
+   * The tokenId of the position to remove liquidity from.
    */
-  deadline: string
+  tokenId: string
 
   /**
    * The slippage tolerance for the transaction.
    */
-  slippageTolerance: number
+  slippageTolerance?: number
 
   /**
-   * The tokenId of the position to remove liquidity from.
+   * The deadline for the transaction. (default: 5 minutes from now)
    */
-  tokenId: string
+  deadline?: string
 }
 
 /**
@@ -41,7 +40,7 @@ export interface BuildRemoveLiquidityCallDataParams {
  * ```typescript
  * const { calldata, value } = buildRemoveLiquidityCallData({
  *   position,
- *   liquidityPercentage: new Percent(1, 1), // 100%
+ *   liquidityPercentage: 10_000, // 100%
  * });
  *
  * const tx = await sendTransaction({
@@ -51,18 +50,29 @@ export interface BuildRemoveLiquidityCallDataParams {
  * });
  * ```
  */
-export function buildRemoveLiquidityCallData({
-  position,
-  liquidityPercentage,
-  deadline,
-  slippageTolerance,
-  tokenId,
-}: BuildRemoveLiquidityCallDataParams) {
+export async function buildRemoveLiquidityCallData(
+  {
+    liquidityPercentage,
+    deadline: deadlineParam,
+    slippageTolerance,
+    tokenId,
+  }: BuildRemoveLiquidityCallDataParams,
+  instance: UniDevKitV4Instance,
+) {
+  // Get position data
+  const positionData = await getPosition({ tokenId }, instance)
+  if (!positionData) {
+    throw new Error('Position not found')
+  }
+
+  const deadline = deadlineParam ?? (await getDefaultDeadline(instance)).toString()
+
+  // Build remove liquidity call data
   try {
-    const { calldata, value } = V4PositionManager.removeCallParameters(position, {
-      slippageTolerance: new Percent(slippageTolerance, 100),
+    const { calldata, value } = V4PositionManager.removeCallParameters(positionData.position, {
+      slippageTolerance: percentFromBips(slippageTolerance ?? DEFAULT_SLIPPAGE_TOLERANCE),
       deadline: deadline,
-      liquidityPercentage: new Percent(liquidityPercentage, 100),
+      liquidityPercentage: percentFromBips(liquidityPercentage),
       tokenId: tokenId,
     })
 
