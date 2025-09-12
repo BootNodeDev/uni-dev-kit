@@ -1,41 +1,43 @@
 import { DEFAULT_SLIPPAGE_TOLERANCE } from '@/constants/common'
 import { percentFromBips } from '@/helpers/percent'
 import type { UniDevKitV4Instance } from '@/types'
-import type { BuildRemoveLiquidityCallDataParams } from '@/types/utils/buildRemoveLiquidityCallData'
+import type { BuildCollectFeesCallDataParams } from '@/types/utils/buildCollectFeesCallData'
 import { getDefaultDeadline } from '@/utils/getDefaultDeadline'
 import { getPosition } from '@/utils/getPosition'
 import { V4PositionManager } from '@uniswap/v4-sdk'
 
 /**
- * Builds the calldata and value required to remove liquidity from a Uniswap v4 position.
+ * Builds the calldata and value required to collect fees from a Uniswap v4 position.
  *
- * @param params - The parameters for removing liquidity.
+ * @param params - The parameters for collecting fees.
+ * @param instance - The UniDevKit instance for accessing pool state.
  * @returns An object containing the calldata and the value to send with the transaction.
  *
  * @example
- * ```typescript
- * const { calldata, value } = buildRemoveLiquidityCallData({
- *   position,
- *   liquidityPercentage: 10_000, // 100%
- * });
+ * ```ts
+ * const { calldata, value } = await buildCollectFeesCallData({
+ *   tokenId: '1234',
+ *   recipient: userAddress,
+ *   slippageTolerance: 50, // 0.5%
+ *   deadline: '1234567890',
+ * }, instance)
  *
  * const tx = await sendTransaction({
  *   to: PositionManager.address,
  *   data: calldata,
- *   value: value,
- * });
+ *   value,
+ * })
  * ```
  */
-export async function buildRemoveLiquidityCallData(
+export async function buildCollectFeesCallData(
   {
-    liquidityPercentage,
+    tokenId,
+    recipient,
     deadline: deadlineParam,
     slippageTolerance,
-    tokenId,
-  }: BuildRemoveLiquidityCallDataParams,
+  }: BuildCollectFeesCallDataParams,
   instance: UniDevKitV4Instance,
 ) {
-  // Get position data
   const positionData = await getPosition({ tokenId }, instance)
   if (!positionData) {
     throw new Error('Position not found')
@@ -43,18 +45,17 @@ export async function buildRemoveLiquidityCallData(
 
   const deadline = deadlineParam ?? (await getDefaultDeadline(instance)).toString()
 
-  // Build remove liquidity call data
   try {
-    const { calldata, value } = V4PositionManager.removeCallParameters(positionData.position, {
+    const { calldata, value } = V4PositionManager.collectCallParameters(positionData.position, {
+      recipient,
+      deadline,
+      tokenId,
       slippageTolerance: percentFromBips(slippageTolerance ?? DEFAULT_SLIPPAGE_TOLERANCE),
-      deadline: deadline,
-      liquidityPercentage: percentFromBips(liquidityPercentage),
-      tokenId: tokenId,
     })
 
     return {
-      calldata: calldata,
-      value: value,
+      calldata,
+      value,
     }
   } catch (error) {
     console.error(error)

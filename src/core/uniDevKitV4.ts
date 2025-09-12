@@ -5,6 +5,8 @@ import type {
   BuildAddLiquidityCallDataResult,
   BuildAddLiquidityParams,
 } from '@/types/utils/buildAddLiquidityCallData'
+import type { BuildCollectFeesCallDataParams } from '@/types/utils/buildCollectFeesCallData'
+import type { BuildRemoveLiquidityCallDataParams } from '@/types/utils/buildRemoveLiquidityCallData'
 import type { PoolParams } from '@/types/utils/getPool'
 import type { GetPoolKeyFromPoolIdParams } from '@/types/utils/getPoolKeyFromPoolId'
 import type { GetPositionParams, GetPositionResponse } from '@/types/utils/getPosition'
@@ -17,10 +19,8 @@ import type {
   PreparePermit2DataResult,
 } from '@/types/utils/permit2'
 import { buildAddLiquidityCallData } from '@/utils/buildAddLiquidityCallData'
-import {
-  type BuildRemoveLiquidityCallDataParams,
-  buildRemoveLiquidityCallData,
-} from '@/utils/buildRemoveLiquidityCallData'
+import { buildCollectFeesCallData } from '@/utils/buildCollectFeesCallData'
+import { buildRemoveLiquidityCallData } from '@/utils/buildRemoveLiquidityCallData'
 import { buildSwapCallData } from '@/utils/buildSwapCallData'
 import { getPool } from '@/utils/getPool'
 import { getPoolKeyFromPoolId } from '@/utils/getPoolKeyFromPoolId'
@@ -247,5 +247,15 @@ export class UniDevKitV4 {
    */
   async buildRemoveLiquidityCallData(params: BuildRemoveLiquidityCallDataParams) {
     return buildRemoveLiquidityCallData(params, this.instance)
+  }
+
+  /**
+   * Builds a collect fees call data for a given collect fees parameters.
+   * @param params @type {BuildCollectFeesCallDataParams}
+   * @returns Promise resolving to collect fees call data including calldata and value
+   * @throws Error if SDK instance is not found or if collect fees call data is invalid
+   */
+  async buildCollectFeesCallData(params: BuildCollectFeesCallDataParams) {
+    return buildCollectFeesCallData(params, this.instance)
   }
 }
