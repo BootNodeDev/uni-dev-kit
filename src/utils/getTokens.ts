@@ -1,7 +1,7 @@
-import type { UniDevKitV4Instance } from '@/types/core'
-import type { GetTokensParams } from '@/types/utils/getTokens'
 import { type Currency, Ether, Token } from '@uniswap/sdk-core'
 import { erc20Abi, zeroAddress } from 'viem'
+import type { UniDevKitV4Instance } from '@/types/core'
+import type { GetTokensParams } from '@/types/utils/getTokens'
 
 /**
  * Retrieves Token instances for a list of token addresses on a specific chain.

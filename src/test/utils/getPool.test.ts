@@ -1,10 +1,10 @@
-import { createMockSdkInstance } from '@/test/helpers/sdkInstance'
-import { FeeTier } from '@/types/utils/getPool'
-import { getPool } from '@/utils/getPool'
 import { Token } from '@uniswap/sdk-core'
 import { Pool } from '@uniswap/v4-sdk'
 import { type Address, zeroAddress } from 'viem'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createMockSdkInstance } from '@/test/helpers/sdkInstance'
+import { FeeTier } from '@/types/utils/getPool'
+import { getPool } from '@/utils/getPool'
 
 const mockGetInstance = vi.fn()
 const mockGetTokens = vi.fn()

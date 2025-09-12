@@ -1,6 +1,6 @@
+import { describe, expect, it, vi } from 'vitest'
 import { createMockSdkInstance } from '@/test/helpers/sdkInstance'
 import { getPoolKeyFromPoolId } from '@/utils/getPoolKeyFromPoolId'
-import { describe, expect, it, vi } from 'vitest'
 
 describe('getPoolKeyFromPoolId', () => {
   it('should throw error if SDK instance not found', async () => {

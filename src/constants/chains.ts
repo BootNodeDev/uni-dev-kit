@@ -1,5 +1,4 @@
 import {
-  type Chain,
   arbitrum,
   arbitrumSepolia,
   avalanche,
@@ -7,6 +6,7 @@ import {
   baseSepolia,
   blast,
   bsc,
+  type Chain,
   celo,
   mainnet,
   optimism,

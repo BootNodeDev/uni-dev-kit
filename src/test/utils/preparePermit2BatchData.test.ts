@@ -1,6 +1,6 @@
+import { describe, expect, it, vi } from 'vitest'
 import { createMockSdkInstance } from '@/test/helpers/sdkInstance'
 import { preparePermit2BatchData } from '@/utils/preparePermit2BatchData'
-import { describe, expect, it, vi } from 'vitest'
 
 describe('preparePermit2BatchData', () => {
   const instance = createMockSdkInstance()

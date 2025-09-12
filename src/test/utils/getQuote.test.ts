@@ -1,9 +1,9 @@
-import { createMockSdkInstance } from '@/test/helpers/sdkInstance'
-import { getQuote } from '@/utils/getQuote'
 import type { Pool } from '@uniswap/v4-sdk'
 import type { Abi } from 'viem'
 import type { SimulateContractReturnType } from 'viem/actions'
 import { describe, expect, it, vi } from 'vitest'
+import { createMockSdkInstance } from '@/test/helpers/sdkInstance'
+import { getQuote } from '@/utils/getQuote'
 
 const mockPool: Pool = {
   poolKey: {

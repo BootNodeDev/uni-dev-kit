@@ -1,7 +1,7 @@
-import { createMockSdkInstance } from '@/test/helpers/sdkInstance'
 import { PERMIT2_ADDRESS } from '@uniswap/permit2-sdk'
 import { type Block, zeroAddress } from 'viem'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createMockSdkInstance } from '@/test/helpers/sdkInstance'
 import { preparePermit2Data } from '../../utils/preparePermit2Data'
 
 describe('preparePermit2Data', () => {

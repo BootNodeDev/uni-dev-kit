@@ -1,6 +1,6 @@
+import { beforeEach, describe, expect, it } from 'vitest'
 import { UniDevKitV4 } from '@/core/uniDevKitV4'
 import type { UniDevKitV4Config } from '@/types/core'
-import { beforeEach, describe, expect, it } from 'vitest'
 
 describe('UniDevKitV4', () => {
   let config: UniDevKitV4Config

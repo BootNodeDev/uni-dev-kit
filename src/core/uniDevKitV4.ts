@@ -1,3 +1,7 @@
+import type { Currency } from '@uniswap/sdk-core'
+import type { Pool, PoolKey } from '@uniswap/v4-sdk'
+import type { Abi, Address, PublicClient } from 'viem'
+import { createPublicClient, http } from 'viem'
 import { getChainById } from '@/constants/chains'
 import type { BuildSwapCallDataParams } from '@/types'
 import type { UniDevKitV4Config, UniDevKitV4Instance } from '@/types/core'
@@ -29,10 +33,6 @@ import { getQuote } from '@/utils/getQuote'
 import { getTokens } from '@/utils/getTokens'
 import { preparePermit2BatchData } from '@/utils/preparePermit2BatchData'
 import { preparePermit2Data } from '@/utils/preparePermit2Data'
-import type { Currency } from '@uniswap/sdk-core'
-import type { Pool, PoolKey } from '@uniswap/v4-sdk'
-import type { Abi, Address, PublicClient } from 'viem'
-import { http, createPublicClient } from 'viem'
 
 /**
  * Main class for interacting with Uniswap V4 contracts.

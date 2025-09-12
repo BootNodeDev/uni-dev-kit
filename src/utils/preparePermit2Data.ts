@@ -1,5 +1,3 @@
-import type { UniDevKitV4Instance } from '@/types'
-import type { PreparePermit2DataParams, PreparePermit2DataResult } from '@/types/utils/permit2'
 import {
   AllowanceTransfer,
   MaxUint160,
@@ -9,6 +7,8 @@ import {
 import type { TypedDataField } from 'ethers'
 import type { Address, Hex } from 'viem'
 import { zeroAddress } from 'viem'
+import type { UniDevKitV4Instance } from '@/types'
+import type { PreparePermit2DataParams, PreparePermit2DataResult } from '@/types/utils/permit2'
 
 /**
  * Prepares the permit2  data for a single token

@@ -1,8 +1,8 @@
-import { createMockSdkInstance } from '@/test/helpers/sdkInstance'
-import { getPosition } from '@/utils/getPosition'
 import { Token } from '@uniswap/sdk-core'
 import type { Address } from 'viem'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createMockSdkInstance } from '@/test/helpers/sdkInstance'
+import { getPosition } from '@/utils/getPosition'
 
 vi.mock('@/utils/getTokens', () => ({
   getTokens: vi.fn(),

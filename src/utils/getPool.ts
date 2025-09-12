@@ -1,3 +1,5 @@
+import { Pool } from '@uniswap/v4-sdk'
+import { slice, zeroAddress } from 'viem'
 import V4PositionManagerAbi from '@/constants/abis/V4PositionMananger'
 import V4StateViewAbi from '@/constants/abis/V4StateView'
 import { getTickSpacingForFee } from '@/helpers/fees'
@@ -5,8 +7,6 @@ import { sortTokens } from '@/helpers/tokens'
 import type { UniDevKitV4Instance } from '@/types/core'
 import { FeeTier, type PoolParams } from '@/types/utils/getPool'
 import { getTokens } from '@/utils/getTokens'
-import { Pool } from '@uniswap/v4-sdk'
-import { slice, zeroAddress } from 'viem'
 
 export const DEFAULT_HOOKS = zeroAddress
 

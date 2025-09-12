@@ -1,3 +1,5 @@
+import { encodeSqrtRatioX96, nearestUsableTick, TickMath } from '@uniswap/v3-sdk'
+import { Position, V4PositionManager } from '@uniswap/v4-sdk'
 import { DEFAULT_SLIPPAGE_TOLERANCE } from '@/constants/common'
 import { percentFromBips } from '@/helpers/percent'
 import type { UniDevKitV4Instance } from '@/types'
@@ -6,8 +8,6 @@ import type {
   BuildAddLiquidityParams,
 } from '@/types/utils/buildAddLiquidityCallData'
 import { getDefaultDeadline } from '@/utils/getDefaultDeadline'
-import { TickMath, encodeSqrtRatioX96, nearestUsableTick } from '@uniswap/v3-sdk'
-import { Position, V4PositionManager } from '@uniswap/v4-sdk'
 
 /**
  * Builds the calldata and native value required to add liquidity to a Uniswap V4 pool.
@@ -132,10 +132,6 @@ export async function buildAddLiquidityCallData(
     } else {
       throw new Error('Invalid input: at least one of amount0 or amount1 must be defined.')
     }
-
-    console.log('positionAmount0', position.amount0.toSignificant(6))
-    console.log('positionAmount1', position.amount1.toSignificant(6))
-    console.log('position', position)
 
     // Get native currency
     const nativeCurrency = pool.token0.isNative

@@ -1,10 +1,10 @@
+import { Pool, Position as V4Position } from '@uniswap/v4-sdk'
 import V4PositionManagerAbi from '@/constants/abis/V4PositionMananger'
 import V4StateViewAbi from '@/constants/abis/V4StateView'
 import { decodePositionInfo } from '@/helpers/positions'
 import type { UniDevKitV4Instance } from '@/types/core'
 import type { GetPositionParams, GetPositionResponse } from '@/types/utils/getPosition'
 import { getTokens } from '@/utils/getTokens'
-import { Pool, Position as V4Position } from '@uniswap/v4-sdk'
 
 /**
  * Retrieves a Uniswap V4 position instance for a given token ID.

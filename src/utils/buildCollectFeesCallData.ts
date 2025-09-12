@@ -1,10 +1,10 @@
+import { V4PositionManager } from '@uniswap/v4-sdk'
 import { DEFAULT_SLIPPAGE_TOLERANCE } from '@/constants/common'
 import { percentFromBips } from '@/helpers/percent'
 import type { UniDevKitV4Instance } from '@/types'
 import type { BuildCollectFeesCallDataParams } from '@/types/utils/buildCollectFeesCallData'
 import { getDefaultDeadline } from '@/utils/getDefaultDeadline'
 import { getPosition } from '@/utils/getPosition'
-import { V4PositionManager } from '@uniswap/v4-sdk'
 
 /**
  * Builds the calldata and value required to collect fees from a Uniswap v4 position.

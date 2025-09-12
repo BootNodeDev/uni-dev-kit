@@ -1,8 +1,8 @@
-import { createMockSdkInstance } from '@/test/helpers/sdkInstance'
-import { getTokens } from '@/utils/getTokens'
 import { Ether, Token } from '@uniswap/sdk-core'
 import { type Address, zeroAddress } from 'viem'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createMockSdkInstance } from '@/test/helpers/sdkInstance'
+import { getTokens } from '@/utils/getTokens'
 
 vi.mock('@/constants/chains', () => ({
   getChainById: () => ({

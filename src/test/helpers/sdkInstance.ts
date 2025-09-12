@@ -1,7 +1,7 @@
-import type { UniDevKitV4Instance } from '@/types/core'
-import { http, createPublicClient } from 'viem'
+import { createPublicClient, http } from 'viem'
 import { mainnet } from 'viem/chains'
 import { vi } from 'vitest'
+import type { UniDevKitV4Instance } from '@/types/core'
 
 export const createMockSdkInstance = (
   overrides?: Partial<UniDevKitV4Instance>,

@@ -1,8 +1,3 @@
-import type { UniDevKitV4Instance } from '@/types'
-import type {
-  PreparePermit2BatchDataParams,
-  PreparePermit2BatchDataResult,
-} from '@/types/utils/permit2'
 import {
   AllowanceTransfer,
   MaxUint160,
@@ -59,6 +54,11 @@ import { zeroAddress } from 'viem' /**
  * @returns Promise resolving to the permit2 batch data and helper functions
  * @throws Error if any required dependencies are missing
  */
+import type { UniDevKitV4Instance } from '@/types'
+import type {
+  PreparePermit2BatchDataParams,
+  PreparePermit2BatchDataResult,
+} from '@/types/utils/permit2'
 export async function preparePermit2BatchData(
   params: PreparePermit2BatchDataParams,
   instance: UniDevKitV4Instance,
