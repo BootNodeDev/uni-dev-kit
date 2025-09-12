@@ -57,7 +57,7 @@ describe('buildRemoveLiquidityCallData', () => {
   })
 
   it('should throw if position not found', async () => {
-    vi.mocked(getPosition).mockResolvedValueOnce(undefined as ReturnType<typeof getPosition>)
+    vi.mocked(getPosition).mockResolvedValueOnce(undefined as any)
 
     const { buildRemoveLiquidityCallData } = await import('@/utils/buildRemoveLiquidityCallData')
     await expect(
