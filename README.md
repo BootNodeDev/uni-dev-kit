@@ -2,6 +2,7 @@
 [![CI](https://github.com/BootNodeDev/uni-dev-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/BootNodeDev/uni-dev-kit/actions/workflows/ci.yml)
 [![Release](https://github.com/BootNodeDev/uni-dev-kit/actions/workflows/release.yml/badge.svg)](https://github.com/BootNodeDev/uni-dev-kit/actions/workflows/release.yml)
 [![Docs](https://img.shields.io/badge/docs-typedoc-blue)](https://bootnodedev.github.io/uni-dev-kit)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/BootNodeDev/uni-dev-kit)
 
 > Modern TypeScript SDK for integrating Uniswap V4 into your dapp.  
 > **Early version:** API may change rapidly.
